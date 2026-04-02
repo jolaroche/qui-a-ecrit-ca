@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ma Liste">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>To-Do List de Jojo</title>
+    <style>
+        :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; --sage: #6B8F71; }
+        body { font-family: sans-serif; background: var(--cream); padding: 20px; text-align: center; color: var(--ink); }
+        
+        .todo-card { 
+            background: white; margin: 10px auto; padding: 15px; 
+            border-radius: 15px; display: flex; justify-content: space-between;
+            align-items: center; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .todo-text { font-weight: 500; font-size: 1.1rem; text-align: left; flex: 1; margin-right: 10px; }
+        .todo-text.completed { text-decoration: line-through; color: #aaa; }
+
+        .btn-check { background: var(--sage); color: white; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .btn-delete { background: none; color: var(--warm); font-size: 1.2rem; padding: 10px; margin-left: 5px; }
+
+        button { border: none; cursor: pointer; font-weight: bold; }
+        
+        .add-zone { margin-bottom: 30px; display: flex; gap: 10px; justify-content: center; max-width: 400px; margin-left: auto; margin-right: auto; }
+        .input-main { padding: 12px; border-radius: 10px; border: 1px solid #ddd; width: 75%; font-size: 1rem; }
+        .btn-add { background: var(--ink); color: white; border-radius: 10px; padding: 0 20px; font-size: 1.2rem; }
+
+        .back-btn { display: inline-block; margin-top: 30px; text-decoration: none; color: #888; }
+        
+        /* Animation pour le mode plein écran iOS */
+        @media  (display-mode: standalone) {
+            body { padding-top: 50px; }
+        }
+    </style>
+</head>
+<body>
+    <h2>📝 Ma Liste</h2>
+    
+    <div class="add-zone">
+        <input type="text" id="todoInput" class="input-main" placeholder="Nouvelle tâche...">
+        <button onclick="addTodo()" class="btn-add">+</button>
+    </div>
+
+    <div id="todoList"></div>
+
+    <a href="index.html" class="back-btn">← Retour au menu</a>
+
+    <script>
+        let todos = JSON.parse(localStorage.getItem('jojo_todos')) || [];
+
+        function save() {
+            localStorage.setItem('jojo_todos', JSON.stringify(todos));
+            render();
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            if(input.value.trim()) {
+                todos.push({ text: input.value, done: false });
+                input.value = '';
+                save();
+            }
+        }
+
+        function toggleTodo(index) {
+            todos[index].done = !todos[index].done;
+            save();
+        }
+
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            save();
+        }
+
+        function render() {
+            const list = document.getElementById('todoList');
+            list.innerHTML = todos.map((t, i) => `
+                <div class="todo-card">
+                    <span class="todo-text ${t.done ? 'completed' : ''}" onclick="toggleTodo(${i})">
+                        ${t.text}
+                    </span>
+                    <div style="display: flex; align-items: center;">
+                        <button class="btn-check" onclick="toggleTodo(${i})">${t.done ? '✓' : ''}</button>
+                        <button class="btn-delete" onclick="deleteTodo(${i})">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Pour pouvoir valider avec la touche "Entrée"
+        document.getElementById('todoInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') addTodo();
+        });
+
+        render();
+
+        // Le script pour rester en plein écran (iOS Hack)
+        (function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")
+    </script>
+</body>
+</html>
