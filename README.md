@@ -1,4 +1,4 @@
-# Outils et jeux développé par Joé Laroche 
+# Outils et jeux développés par Joé Laroche 
 
 Il s'agit ici d'un projet personnel permettant grâce au signet safari, d'avoir une application sur téléphone stockant différents jeux et outils que j'apprécie et dont j'ai besoin.
 À l'heure actuelle, voici les différentes applications : 
