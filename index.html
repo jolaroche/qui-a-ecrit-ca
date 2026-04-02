@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Qui a dit ça ?">
+<link rel="apple-touch-icon" href="https://votre-image-lien.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Qui a dit ça ?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F5F0E8;
+  --ink: #1A1209;
+  --warm: #E8613A;
+  --warm-light: #F4A07A;
+  --gold: #D4A843;
+  --sage: #6B8F71;
+  --lavender: #9B88C2;
+  --rose: #C96B8A;
+  --card-bg: #FDFAF4;
+  --border: rgba(26,18,9,0.15);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231A1209' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========= LAYOUT ========= */
+#app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  position: relative;
+  z-index: 1;
+}
+#main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+/* Bottom nav — only visible on home */
+#bottom-nav {
+  display: flex;
+  background: var(--ink);
+  padding: 0 0 env(safe-area-inset-bottom, 0px);
+  flex-shrink: 0;
+}
+#bottom-nav.hidden { display: none; }
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px 12px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: rgba(245,240,232,0.45);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-tab .nav-icon { font-size: 1.3rem; line-height: 1; }
+.nav-tab.active { color: var(--warm-light); }
+
+/* ========= SCREENS ========= */
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 20px 32px;
+  min-height: 100%;
+  position: relative;
+}
+.screen.active { display: flex; }
+
+/* ========= TYPOGRAPHY ========= */
+h1 { font-family: 'Fraunces', serif; font-weight: 900; font-size: clamp(2.2rem,9vw,3.4rem); line-height: 1.05; letter-spacing: -0.02em; }
+h2 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(1.35rem,5.5vw,1.9rem); line-height: 1.2; }
+h3 { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.1rem; }
+.section-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.45; margin-bottom: 10px; }
+
+/* ========= BUTTONS ========= */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 28px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; white-space: nowrap; }
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--warm); color: white; box-shadow: 0 4px 0 #b84a28, 0 6px 20px rgba(232,97,58,0.3); }
+.btn-primary:active { box-shadow: 0 1px 0 #b84a28; transform: translateY(3px) scale(0.98); }
+.btn-secondary { background: var(--card-bg); color: var(--ink); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.btn-secondary:active { box-shadow: 1px 1px 0 var(--ink); transform: translate(2px,2px); }
+.btn-ghost { background: transparent; color: var(--ink); opacity: 0.55; font-weight: 400; font-size: 0.88rem; padding: 10px 16px; }
+.btn-danger { background: var(--rose); color: white; }
+.btn-sm { padding: 9px 16px; font-size: 0.83rem; }
+.btn-xs { padding: 6px 12px; font-size: 0.78rem; }
+.btn-icon { width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 1.1rem; background: var(--ink); color: var(--cream); box-shadow: 2px 2px 0 rgba(0,0,0,0.25); flex-shrink: 0; }
+.btn-icon-sm { width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.w-full { width: 100%; }
+
+/* ========= CARDS ========= */
+.card { background: var(--card-bg); border-radius: 18px; border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 18px; width: 100%; }
+.card-sm { border-radius: 14px; padding: 14px; box-shadow: 3px 3px 0 var(--ink); }
+
+/* ========= INPUTS ========= */
+textarea, input[type=text], input[type=number] {
+  width: 100%; background: var(--card-bg); border: 2px solid var(--ink); border-radius: 12px;
+  padding: 13px 15px; font-family: 'DM Sans', sans-serif; font-size: 0.97rem; color: var(--ink);
+  outline: none; resize: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+textarea:focus, input[type=text]:focus, input[type=number]:focus { border-color: var(--warm); box-shadow: 0 0 0 3px rgba(232,97,58,0.15); }
+textarea { min-height: 90px; }
+
+/* ========= BADGES ========= */
+.badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; background: var(--gold); color: var(--ink); }
+.badge-sm { padding: 3px 9px; font-size: 0.65rem; }
+
+/* ========= PILL NAV ========= */
+.step-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--ink); color: var(--cream); border-radius: 50px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* ========= PLAYER CHIP ========= */
+.player-chip { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--card-bg); border: 2px solid var(--ink); border-radius: 13px; box-shadow: 3px 3px 0 var(--ink); width: 100%; margin-bottom: 9px; animation: slideIn 0.25s ease; }
+@keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+.player-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; border: 2px solid currentColor; }
+.player-name-text { font-weight: 600; flex: 1; font-size: 0.92rem; }
+.score-badge { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.1rem; min-width: 30px; text-align: center; }
+.score-pos { color: var(--sage); } .score-neg { color: var(--warm); }
+
+/* ========= LOGO ACCENT ========= */
+.logo-accent { display: inline-block; background: var(--warm); color: white; padding: 2px 10px; border-radius: 8px; transform: rotate(-1.5deg); }
+
+/* ========= THEME CARD ========= */
+.theme-reveal { background: var(--ink); color: var(--cream); border-radius: 18px; padding: 26px 22px; width: 100%; text-align: center; position: relative; overflow: hidden; box-shadow: 5px 5px 0 rgba(0,0,0,0.25); }
+.theme-reveal::before { content:'✦'; position:absolute; font-size:7rem; opacity:0.04; top:-15px; right:-15px; pointer-events:none; }
+.theme-emoji { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+.theme-text { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(1.1rem,4.5vw,1.6rem); line-height: 1.3; color: var(--cream); }
+
+/* ========= PASS SCREEN ========= */
+.pass-screen-content { background: var(--ink); border-radius: 22px; padding: 32px 22px; width: 100%; text-align: center; color: var(--cream); }
+
+/* ========= GUESS ========= */
+.answer-bubble { background: var(--ink); color: var(--cream); border-radius: 16px 16px 16px 4px; padding: 15px 17px; font-family: 'Fraunces', serif; font-size: 1.05rem; font-style: italic; line-height: 1.4; margin-bottom: 14px; }
+.player-option { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border: 2px solid transparent; border-radius: 11px; cursor: pointer; transition: all 0.18s; margin-bottom: 7px; background: rgba(26,18,9,0.04); }
+.player-option:active { transform: scale(0.98); }
+.player-option.selected { border-color: var(--warm); background: rgba(232,97,58,0.08); }
+.player-option .avatar-sm { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; border: 2px solid; flex-shrink: 0; }
+.player-option .opt-name { font-weight: 500; font-size: 0.92rem; flex: 1; }
+.radio-circle { width: 19px; height: 19px; border-radius: 50%; border: 2px solid rgba(26,18,9,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.18s; }
+.player-option.selected .radio-circle { border-color: var(--warm); background: var(--warm); }
+.player-option.selected .radio-circle::after { content:''; width:7px; height:7px; border-radius:50%; background:white; display:block; }
+
+/* ========= REVEAL ========= */
+.reveal-item { background: var(--card-bg); border: 2px solid var(--ink); border-radius: 15px; padding: 15px; width: 100%; margin-bottom: 11px; box-shadow: 3px 3px 0 var(--ink); }
+.reveal-answer { font-family: 'Fraunces', serif; font-size: 1.05rem; font-style: italic; color: var(--ink); margin-bottom: 9px; padding-bottom: 9px; border-bottom: 1px dashed rgba(26,18,9,0.18); }
+.reveal-author { display: flex; align-items: center; gap: 8px; font-size: 0.83rem; font-weight: 600; margin-bottom: 9px; }
+.guess-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 7px; font-size: 0.74rem; font-weight: 500; border: 1.5px solid; }
+.guess-tag.correct { border-color: var(--sage); background: rgba(107,143,113,0.1); color: var(--sage); }
+.guess-tag.wrong { border-color: var(--rose); background: rgba(201,107,138,0.1); color: var(--rose); }
+
+/* ========= PROGRESS BAR ========= */
+.progress-bar { width: 100%; height: 5px; background: rgba(26,18,9,0.1); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--warm); border-radius: 3px; transition: width 0.4s ease; }
+
+/* ========= PODIUM ========= */
+.podium-bar { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 12px 0; }
+.podium-col { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.podium-block { width: 68px; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.4rem; color: var(--cream); }
+.podium-block.gold { background: var(--gold); color: var(--ink); }
+.podium-block.silver { background: #B0B0B0; color: var(--ink); }
+.podium-block.bronze { background: #CD7F32; color: white; }
+.podium-name { font-size: 0.72rem; font-weight: 600; text-align: center; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ========= SETTINGS TABS ========= */
+.settings-tabs { display: flex; gap: 6px; width: 100%; margin-bottom: 18px; background: rgba(26,18,9,0.07); border-radius: 12px; padding: 4px; }
+.settings-tab { flex: 1; padding: 9px 6px; border-radius: 9px; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: rgba(26,18,9,0.5); transition: all 0.2s; }
+.settings-tab.active { background: var(--card-bg); color: var(--ink); box-shadow: 0 2px 8px rgba(26,18,9,0.1), 0 0 0 1.5px var(--ink); }
+
+/* ========= CATEGORY CHIPS ========= */
+.cat-filter { display: flex; flex-wrap: wrap; gap: 7px; width: 100%; margin-bottom: 14px; }
+.cat-chip { padding: 6px 13px; border-radius: 20px; border: 1.5px solid; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+.cat-chip.active { color: white; }
+.cat-chip:not(.active) { background: transparent; color: var(--ink); border-color: rgba(26,18,9,0.2); }
+
+/* ========= THEME TOGGLE ITEM ========= */
+.theme-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 12px; background: var(--card-bg); border: 1.5px solid var(--border); margin-bottom: 7px; transition: all 0.18s; }
+.theme-item.disabled { opacity: 0.4; }
+.theme-item-emoji { font-size: 1.2rem; flex-shrink: 0; }
+.theme-item-text { font-size: 0.85rem; line-height: 1.35; flex: 1; }
+.toggle-switch { width: 42px; height: 24px; border-radius: 12px; border: none; cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.25s; }
+.toggle-switch.on { background: var(--sage); }
+.toggle-switch.off { background: rgba(26,18,9,0.18); }
+.toggle-switch::after { content:''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 3px; transition: left 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.toggle-switch.on::after { left: 21px; }
+.toggle-switch.off::after { left: 3px; }
+
+/* ========= PROFILE CARD ========= */
+.profile-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--card-bg); border: 2px solid var(--ink); border-radius: 14px; box-shadow: 3px 3px 0 var(--ink); width: 100%; margin-bottom: 10px; cursor: pointer; transition: all 0.18s; }
+.profile-card:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.profile-avatar-big { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; border: 2px solid var(--ink); }
+.profile-info { flex: 1; }
+.profile-name { font-weight: 700; font-size: 1rem; }
+.profile-stats { font-size: 0.75rem; opacity: 0.55; margin-top: 2px; }
+
+/* ========= EMOJI PICKER ========= */
+.emoji-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; width: 100%; margin: 12px 0; }
+.emoji-opt { font-size: 1.5rem; padding: 8px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; text-align: center; transition: all 0.15s; background: none; }
+.emoji-opt.selected { border-color: var(--warm); background: rgba(232,97,58,0.1); }
+
+/* ========= COLOR PICKER ========= */
+.color-grid { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.color-opt { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: all 0.15s; outline: none; }
+.color-opt.selected { border-color: var(--ink); transform: scale(1.15); }
+
+/* ========= MISC ========= */
+.divider { width: 100%; height: 1px; background: var(--border); margin: 14px 0; }
+.gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; }
+.mt-2 { margin-top: 8px; } .mt-3 { margin-top: 12px; } .mt-4 { margin-top: 16px; } .mt-auto { margin-top: auto; }
+.mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; } .mb-4 { margin-bottom: 16px; }
+.flex { display: flex; } .flex-col { flex-direction: column; }
+.items-center { align-items: center; } .justify-between { justify-content: space-between; } .justify-center { justify-content: center; }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.83rem; } .text-xs { font-size: 0.72rem; }
+.opacity-50 { opacity: 0.5; } .opacity-60 { opacity: 0.6; }
+.hidden { display: none !important; }
+.italic { font-style: italic; }
+
+/* ========= MODAL OVERLAY ========= */
+.modal-overlay { position: fixed; inset: 0; background: rgba(26,18,9,0.5); z-index: 100; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(3px); }
+.modal-overlay.hidden { display: none; }
+.modal-sheet { background: var(--cream); border-radius: 24px 24px 0 0; padding: 20px 20px calc(env(safe-area-inset-bottom,0px) + 24px); width: 100%; max-width: 500px; max-height: 85dvh; overflow-y: auto; animation: sheetUp 0.3s ease; }
+@keyframes sheetUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+
+/* ========= CONFETTI ========= */
+@keyframes confetti-fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+.confetti-piece { position: fixed; pointer-events: none; z-index: 999; animation: confetti-fall linear forwards; }
+
+/* ========= POP ANIM ========= */
+@keyframes pop { 0% { transform: scale(0.82); opacity: 0; } 70% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
+.pop { animation: pop 0.35s ease forwards; }
+
+/* ========= COUNTER ========= */
+.counter-row { display: flex; align-items: center; gap: 12px; }
+.counter-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--ink); background: var(--card-bg); font-size: 1.2rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.counter-val { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.4rem; min-width: 30px; text-align: center; }
+
+/* ========= TOAST ========= */
+#toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--cream); padding: 10px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; z-index: 200; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- ======================================================
+     MAIN SHELL
+====================================================== -->
+<div id="app-shell">
+  <div id="main-content">
+
+    <!-- ============================  HOME TAB ============================ -->
+    <div id="tab-home" class="screen active">
+      <div style="margin-top: 32px; text-align: center; width: 100%;">
+        <div style="font-size: 2.8rem; margin-bottom: 10px;">🎭</div>
+        <h1>C'est qui qu'a<br><span class="logo-accent">écrit ça ?</span></h1>
+        <p style="margin-top: 10px; opacity: 0.55; font-size: 0.9rem; line-height: 1.5; max-width: 280px; margin-left: auto; margin-right: auto;">
+          Le jeu où vous pensez connaître vos amis… ou pas.
+        </p>
+      </div>
+
+      <!-- Active theme stats -->
+      <div class="card mt-4" style="display:flex; align-items:center; gap:12px;">
+        <div style="font-size: 1.8rem;">🎲</div>
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:0.9rem;" id="home-theme-count">— thèmes actifs</div>
+          <div style="font-size:0.75rem; opacity:0.5;" id="home-round-count">— tours par partie</div>
+        </div>
+        <button class="btn btn-xs btn-secondary" onclick="switchTab('settings'); openSettingsTab('themes')">Gérer</button>
+      </div>
+
+      <div style="width:100%; margin-top: 20px; display:flex; flex-direction:column; gap:10px;">
+        <button class="btn btn-primary w-full" onclick="goToSetup()" style="font-size:1.05rem; padding:16px;">✦ Nouvelle Partie</button>
+        <button class="btn btn-secondary w-full" onclick="showHowTo()">Comment jouer ?</button>
+      </div>
+
+      <div id="howto" style="display:none; width:100%; margin-top:18px;">
+        <div class="card">
+          <h3 style="margin-bottom:12px;">📖 Comment jouer</h3>
+          <div style="font-size:0.85rem; line-height:1.65; opacity:0.85; display:flex; flex-direction:column; gap:10px;">
+            <div><strong>① Un thème est tiré</strong> — ex: "Ton film préféré ?"</div>
+            <div><strong>② Chacun répond</strong> — en secret, téléphone passé à tour de rôle.</div>
+            <div><strong>③ On devine</strong> — chaque joueur reçoit une réponse anonyme.</div>
+            <div><strong>④ Révélation</strong> — bonne réponse = <span style="color:var(--sage)">+1</span> pour le devineur, <span style="color:var(--warm)">−1</span> pour la personne trouvée.</div>
+          </div>
+          <button class="btn btn-ghost w-full mt-3" onclick="document.getElementById('howto').style.display='none'">Fermer ×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================ SETTINGS TAB ============================ -->
+    <div id="tab-settings" class="screen" style="padding-bottom:80px;">
+      <div style="width:100%; margin-bottom:18px; padding-top:8px;">
+        <h2>Paramètres</h2>
+      </div>
+
+      <div class="settings-tabs">
+        <button class="settings-tab active" id="stab-themes" onclick="openSettingsTab('themes')">🎲 Thèmes</button>
+        <button class="settings-tab" id="stab-profiles" onclick="openSettingsTab('profiles')">👤 Profils</button>
+        <button class="settings-tab" id="stab-game" onclick="openSettingsTab('game')">⚙️ Partie</button>
+      </div>
+
+      <!-- THEMES PANEL -->
+      <div id="spanel-themes" style="width:100%;">
+        <div class="flex justify-between items-center mb-3">
+          <div class="section-label" style="margin:0;">Thèmes actifs : <span id="active-count" style="color:var(--warm);">—</span></div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-xs btn-secondary" onclick="toggleAllThemes(true)">Tout</button>
+            <button class="btn btn-xs btn-secondary" onclick="toggleAllThemes(false)">Aucun</button>
+          </div>
+        </div>
+
+        <!-- Category filter -->
+        <div class="cat-filter" id="cat-filter"></div>
+
+        <!-- Add custom theme -->
+        <div class="card card-sm mb-3" style="border-style: dashed;">
+          <div style="font-weight:600; font-size:0.88rem; margin-bottom:10px;">✏️ Ajouter un thème personnalisé</div>
+          <div class="flex gap-2 mb-2">
+            <input type="text" id="custom-emoji-input" placeholder="🎯" style="width:60px; text-align:center; padding:10px 8px;">
+            <input type="text" id="custom-theme-input" placeholder="Ta question personnalisée…" style="flex:1; padding:10px 13px;">
+          </div>
+          <button class="btn btn-primary btn-sm w-full" onclick="addCustomTheme()">+ Ajouter</button>
+        </div>
+
+        <!-- Theme list -->
+        <div id="theme-list"></div>
+      </div>
+
+      <!-- PROFILES PANEL -->
+      <div id="spanel-profiles" class="hidden" style="width:100%;">
+        <div class="flex justify-between items-center mb-3">
+          <div class="section-label" style="margin:0;"><span id="profile-count">0</span> profil(s)</div>
+          <button class="btn btn-primary btn-sm" onclick="openProfileModal()">+ Créer</button>
+        </div>
+        <div id="profile-list"></div>
+        <div id="no-profiles" style="text-align:center; opacity:0.45; padding:32px 0; font-size:0.88rem;">
+          Aucun profil pour l'instant.<br>Créez-en un pour sauvegarder vos stats !
+        </div>
+      </div>
+
+      <!-- GAME PANEL -->
+      <div id="spanel-game" class="hidden" style="width:100%;">
+        <div class="card card-sm mb-3">
+          <div style="font-weight:600; margin-bottom:14px;">Nombre de tours</div>
+          <div class="counter-row">
+            <button class="counter-btn" onclick="changeRounds(-1)">−</button>
+            <div class="counter-val" id="rounds-display">5</div>
+            <button class="counter-btn" onclick="changeRounds(1)">+</button>
+            <span style="font-size:0.82rem; opacity:0.5; margin-left:4px;">tours par partie</span>
+          </div>
+        </div>
+        <div class="card card-sm">
+          <div style="font-weight:600; margin-bottom:4px;">À propos</div>
+          <div style="font-size:0.8rem; opacity:0.5; line-height:1.6;">
+            Qui a dit ça ? v2.0<br>
+            Jeu conçu pour être joué sur un seul téléphone entre amis.<br>
+            Les profils et paramètres sont sauvegardés localement sur cet appareil.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-tab active" id="nav-home" onclick="switchTab('home')">
+      <span class="nav-icon">🏠</span>Accueil
+    </button>
+    <button class="nav-tab" id="nav-settings" onclick="switchTab('settings')">
+      <span class="nav-icon">⚙️</span>Paramètres
+    </button>
+  </nav>
+</div><!-- /app-shell -->
+
+<!-- ============================
+     GAME SCREENS (overlay)
+============================ -->
+<div id="game-overlay" class="hidden" style="position:fixed;inset:0;z-index:50;background:var(--cream);overflow-y:auto;">
+
+  <!-- SETUP -->
+  <div id="screen-setup" class="screen active" style="min-height:100dvh; padding-bottom:32px;">
+    <div style="width:100%; display:flex; align-items:center; gap:12px; margin-bottom:22px;">
+      <button class="btn btn-icon" onclick="exitGame()">←</button>
+      <div class="step-pill">Étape 1 · Joueurs</div>
+    </div>
+    <h2>Qui joue<br>ce soir ?</h2>
+    <p style="opacity:0.5; margin-top:6px; font-size:0.88rem;">Min. 3 joueurs</p>
+
+    <!-- Profils sauvegardés -->
+    <div id="saved-profiles-section" style="width:100%; margin-top:18px;" class="hidden">
+      <div class="section-label">Profils sauvegardés</div>
+      <div id="saved-profiles-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      <div class="divider mt-3"></div>
+    </div>
+
+    <div style="margin-top:16px; width:100%;">
+      <div style="display:flex; gap:8px; width:100%; margin-bottom:14px;">
+        <input type="text" id="player-input" placeholder="Prénom du joueur…" maxlength="20" onkeypress="if(event.key==='Enter')addPlayer()" style="flex:1;">
+        <button class="btn btn-primary btn-sm" onclick="addPlayer()">+</button>
+      </div>
+      <div id="player-list"></div>
+      <div id="player-count-hint" style="text-align:center; opacity:0.4; font-size:0.83rem; margin-top:6px;">Ajoutez au moins 3 joueurs</div>
+    </div>
+
+    <div style="margin-top:auto; padding-top:22px; width:100%;">
+      <button class="btn btn-primary w-full" id="btn-start-game" onclick="startGame()" style="display:none; padding:15px;">C'est parti ! →</button>
+    </div>
+  </div>
+
+  <!-- THEME -->
+  <div id="screen-theme" class="screen" style="min-height:100dvh;">
+    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+      <div class="step-pill">Tour <span id="round-num">1</span></div>
+      <div class="badge" id="round-badge">Tour 1/5</div>
+    </div>
+    <p style="opacity:0.45; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; margin-bottom:14px;">Le thème de ce tour</p>
+    <div class="theme-reveal pop" id="theme-card">
+      <span class="theme-emoji" id="theme-emoji">🎬</span>
+      <div class="theme-text" id="theme-text">…</div>
+    </div>
+    <div class="card mt-3" style="text-align:center;">
+      <p style="font-size:0.85rem; opacity:0.6; line-height:1.5;">🤫 Chaque joueur répond <strong>en secret</strong>. Passez-vous le téléphone à tour de rôle.</p>
+    </div>
+    <div style="margin-top:auto; padding-top:22px; width:100%;">
+      <button class="btn btn-primary w-full" onclick="startAnswering()" style="padding:15px;">Commencer les réponses →</button>
+    </div>
+  </div>
+
+  <!-- PASS (answer) -->
+  <div id="screen-pass" class="screen" style="min-height:100dvh;">
+    <div class="pass-screen-content" style="margin-top:32px; width:100%;">
+      <div style="font-size:2.8rem; margin-bottom:14px;">📱</div>
+      <h2 style="color:var(--cream);">Passe le téléphone à</h2>
+      <div style="font-family:'Fraunces',serif; font-size:2rem; font-weight:900; color:var(--warm-light); margin:10px 0 18px;" id="pass-name">…</div>
+      <div style="font-size:0.83rem; opacity:0.55; color:var(--cream);">Ne regarde pas ! 🙈</div>
+    </div>
+    <div class="card mt-4" style="text-align:center;">
+      <div style="font-family:'Fraunces',serif; font-size:0.95rem; opacity:0.7;" id="pass-theme-recap"></div>
+    </div>
+    <div style="margin-top:auto; padding-top:22px; width:100%;">
+      <button class="btn btn-primary w-full" onclick="goToAnswer()" style="padding:15px;">C'est moi, je suis prêt·e ✓</button>
+    </div>
+  </div>
+
+  <!-- ANSWER -->
+  <div id="screen-answer" class="screen" style="min-height:100dvh;">
+    <div style="width:100%; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div class="step-pill">Réponse secrète</div>
+        <div style="font-size:0.8rem; opacity:0.5;" id="answer-progress-text">1/4</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="answer-progress-bar" style="width:25%"></div></div>
+    </div>
+    <div class="theme-reveal" style="padding:18px 16px; margin-bottom:18px;">
+      <span id="answer-emoji" style="font-size:1.8rem; display:block; margin-bottom:6px;"></span>
+      <div class="theme-text" id="answer-theme" style="font-size:0.95rem;"></div>
+    </div>
+    <div class="input-wrap">
+      <textarea id="answer-input" placeholder="Ta réponse honnête…" rows="3"></textarea>
+    </div>
+    <p style="font-size:0.75rem; opacity:0.4; text-align:center; margin-top:8px;">🔒 Les autres joueurs ne verront pas ta réponse maintenant</p>
+    <div style="margin-top:auto; padding-top:18px; width:100%;">
+      <button class="btn btn-primary w-full" onclick="submitAnswer()" style="padding:14px;">Valider ✓</button>
+      <button class="btn btn-ghost w-full mt-2" onclick="document.getElementById('answer-input').value=''">Effacer</button>
+    </div>
+  </div>
+
+  <!-- PASS (guess) -->
+  <div id="screen-pass-guess" class="screen" style="min-height:100dvh;">
+    <div class="pass-screen-content" style="margin-top:32px; width:100%;">
+      <div style="font-size:2.8rem; margin-bottom:14px;">🕵️</div>
+      <h2 style="color:var(--cream);">Phase de devinette !</h2>
+      <div style="font-size:0.88rem; color:rgba(245,240,232,0.65); margin-top:10px; line-height:1.5;">Chaque joueur reçoit une réponse anonyme et doit trouver qui l'a écrite.</div>
+      <div style="margin-top:18px; font-family:'Fraunces',serif; font-size:1.8rem; font-weight:900; color:var(--warm-light);" id="pass-guess-name">…</div>
+      <div style="font-size:0.83rem; opacity:0.55; color:var(--cream); margin-top:6px;">C'est ton tour !</div>
+    </div>
+    <div style="margin-top:auto; padding-top:22px; width:100%;">
+      <button class="btn btn-primary w-full" onclick="goToGuess()" style="padding:15px;">Je suis prêt·e →</button>
+    </div>
+  </div>
+
+  <!-- GUESS -->
+  <div id="screen-guess" class="screen" style="min-height:100dvh;">
+    <div style="width:100%; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div class="step-pill">Devinette</div>
+        <div style="font-size:0.8rem; opacity:0.5;" id="guess-progress-text">1/4</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="guess-progress-bar" style="width:25%"></div></div>
+    </div>
+    <div style="background:var(--card-bg); border:2px solid var(--ink); border-radius:18px; box-shadow:4px 4px 0 var(--ink); padding:18px; width:100%;">
+      <div class="section-label">La réponse mystère</div>
+      <div class="answer-bubble" id="guess-answer-text"></div>
+      <div style="font-size:0.83rem; font-weight:600; margin-bottom:10px; opacity:0.65;">Qui a répondu ça ?</div>
+      <div id="guess-player-options"></div>
+    </div>
+    <p style="font-size:0.75rem; opacity:0.4; text-align:center; margin-top:10px;">Tu ne peux pas tomber sur ta propre réponse 😉</p>
+    <div style="margin-top:auto; padding-top:18px; width:100%;">
+      <button class="btn btn-primary w-full" id="btn-submit-guess" onclick="submitGuess()" style="padding:14px;">Valider mon choix ✓</button>
+    </div>
+  </div>
+
+  <!-- REVEAL -->
+  <div id="screen-reveal" class="screen" style="min-height:100dvh; padding-bottom:32px;">
+    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+      <div class="step-pill">🎉 Révélation</div>
+      <div class="badge">Tour <span id="reveal-round">1</span></div>
+    </div>
+    <div class="theme-reveal" style="padding:14px 16px; margin-bottom:18px;">
+      <span style="font-size:1.1rem;" id="reveal-emoji"></span>
+      <div style="font-size:0.9rem; font-family:'Fraunces',serif; color:var(--cream); margin-top:4px;" id="reveal-theme"></div>
+    </div>
+    <div id="reveal-list" style="width:100%;"></div>
+    <div style="margin-top:auto; padding-top:22px; width:100%; display:flex; flex-direction:column; gap:10px;">
+      <button class="btn btn-primary w-full" onclick="nextRound()" id="btn-next-round" style="padding:14px;">Tour suivant →</button>
+      <button class="btn btn-secondary w-full hidden" onclick="goToFinalScore()" id="btn-final-score" style="padding:14px;">🏆 Scores finaux</button>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div id="screen-final" class="screen" style="min-height:100dvh; padding-bottom:32px;">
+    <div style="text-align:center; margin-top:20px; margin-bottom:28px;">
+      <div style="font-size:2.8rem; margin-bottom:8px;">🏆</div>
+      <h1>Fin de<br>la partie !</h1>
+      <p style="opacity:0.5; margin-top:8px; font-size:0.88rem;">Voici ceux qui vous connaissent le mieux</p>
+    </div>
+    <div id="final-podium" style="width:100%;"></div>
+    <div id="final-full-scores" style="width:100%; margin-top:18px;"></div>
+    <div style="margin-top:auto; padding-top:22px; width:100%; display:flex; flex-direction:column; gap:10px;">
+      <button class="btn btn-primary w-full" onclick="restartGame()" style="padding:14px;">🔄 Rejouer — mêmes joueurs</button>
+      <button class="btn btn-secondary w-full" onclick="exitGame()" style="padding:13px;">Accueil</button>
+    </div>
+  </div>
+
+</div><!-- /game-overlay -->
+
+<!-- ============================
+     PROFILE MODAL
+============================ -->
+<div id="modal-profile" class="modal-overlay hidden" onclick="closeProfileModalOnBg(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 id="modal-profile-title" style="margin-bottom:16px;">Créer un profil</h3>
+
+    <div class="section-label">Prénom</div>
+    <input type="text" id="profile-name-input" placeholder="Ton prénom…" maxlength="20" style="margin-bottom:14px;">
+
+    <div class="section-label">Avatar</div>
+    <div class="emoji-grid" id="emoji-grid"></div>
+
+    <div class="section-label mt-2">Couleur</div>
+    <div class="color-grid" id="color-grid"></div>
+
+    <div style="display:flex; gap:10px; margin-top:18px;">
+      <button class="btn btn-ghost" style="flex:0 0 auto;" onclick="closeProfileModal()">Annuler</button>
+      <button class="btn btn-primary w-full" onclick="saveProfile()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==============================================
+//  CONSTANTS
+// ==============================================
+const PLAYER_EMOJIS = ['🐺','🦊','🐻','🦁','🐯','🦋','🦄','🐸','🦑','🐙','🦅','🐲','🦀','🦩','🐬','🦔','🐧','🦚'];
+const PLAYER_COLORS = ['#E8613A','#6B8F71','#9B88C2','#C96B8A','#D4A843','#4A8FB5','#D47836','#5B8FA8','#7B6FA0','#4CAF50'];
+
+const CATEGORIES = [
+  { id: 'culture', label: 'Culture', emoji: '🎬', color: '#9B88C2' },
+  { id: 'perso', label: 'Perso', emoji: '🪞', color: '#E8613A' },
+  { id: 'relations', label: 'Relations', emoji: '❤️', color: '#C96B8A' },
+  { id: 'lifestyle', label: 'Style de vie', emoji: '🌿', color: '#6B8F71' },
+  { id: 'fun', label: 'Fun', emoji: '🎲', color: '#D4A843' },
+  { id: 'philo', label: 'Philo', emoji: '🔮', color: '#4A8FB5' },
+  { id: 'custom', label: 'Perso.', emoji: '✏️', color: '#D47836' },
+];
+
+const BASE_THEMES = [
+  { id:'t001', cat:'culture', emoji:'🎬', text:'Quel est ton film préféré ?' },
+  { id:'t002', cat:'culture', emoji:'🎵', text:'Quelle chanson tu écouterais en boucle une semaine ?' },
+  { id:'t003', cat:'culture', emoji:'📺', text:'Quelle série tu conseillerais à tout le monde ?' },
+  { id:'t004', cat:'culture', emoji:'📚', text:'Quel livre a changé ta façon de voir les choses ?' },
+  { id:'t005', cat:'culture', emoji:'🎤', text:'Quelle chanson tu choisirais pour ton karaoké ?' },
+  { id:'t006', cat:'culture', emoji:'🎮', text:'Quel jeu vidéo / jeu de société te définit le mieux ?' },
+  { id:'t007', cat:'culture', emoji:'🎭', text:'Si ta vie était un film, quel genre serait-il ?' },
+  { id:'t008', cat:'culture', emoji:'🎸', text:'Si tu étais une décennie musicale, tu serais laquelle ?' },
+  { id:'t009', cat:'culture', emoji:'🎹', text:'Quelle musique tu ne peux pas écouter sans ressentir quelque chose ?' },
+  { id:'t010', cat:'culture', emoji:'🎨', text:'Si tu devais choisir un art à maîtriser, lequel ?' },
+  { id:'t011', cat:'perso', emoji:'🪞', text:'Si tu te décrivais en 3 mots, lesquels ?' },
+  { id:'t012', cat:'perso', emoji:'😬', text:'Quelle est ta plus grande peur irrationnelle ?' },
+  { id:'t013', cat:'perso', emoji:'🌟', text:'Quelle est ta plus grande fierté ?' },
+  { id:'t014', cat:'perso', emoji:'😅', text:'Quel est ton plus grand talent caché ?' },
+  { id:'t015', cat:'perso', emoji:'💡', text:"Quelle idée tu n'as jamais eu le courage de réaliser ?" },
+  { id:'t016', cat:'perso', emoji:'💪', text:'Quelle chose dont tu es secrètement très fier·e ?' },
+  { id:'t017', cat:'perso', emoji:'🎯', text:'Quelle habitude tu voudrais vraiment arrêter ?' },
+  { id:'t018', cat:'perso', emoji:'🧠', text:'À quelle heure de la journée es-tu le plus productif·ve ?' },
+  { id:'t019', cat:'perso', emoji:'🌙', text:'Décris ton humeur en ce moment avec un seul mot.' },
+  { id:'t020', cat:'perso', emoji:'🤭', text:'Quelle est ta pensée honteuse que tu n\'avoues jamais ?' },
+  { id:'t021', cat:'perso', emoji:'🔐', text:'Quel est ton secret le plus inoffensif ?' },
+  { id:'t022', cat:'perso', emoji:'🦋', text:'Quelle est la plus grande transformation que tu as vécue ?' },
+  { id:'t023', cat:'perso', emoji:'🧬', text:'Quelle chose tiens-tu de tes parents, en bien ?' },
+  { id:'t024', cat:'perso', emoji:'💭', text:'À quoi tu penses quand tu ne penses à rien ?' },
+  { id:'t025', cat:'perso', emoji:'🌿', text:'Tu es plutôt introverti·e ou extraverti·e — dans quelle proportion ?' },
+  { id:'t026', cat:'relations', emoji:'❤️', text:'Quel est ton love language ?' },
+  { id:'t027', cat:'relations', emoji:'🚩', text:'Quel est pour toi le plus gros red flag chez quelqu\'un ?' },
+  { id:'t028', cat:'relations', emoji:'🤝', text:'Quelle valeur est non-négociable pour toi en amitié ?' },
+  { id:'t029', cat:'relations', emoji:'💔', text:'Quelle expérience passée t\'a le plus appris ?' },
+  { id:'t030', cat:'relations', emoji:'💌', text:'Quelle est la chose la plus douce qu\'on t\'ait jamais dite ?' },
+  { id:'t031', cat:'relations', emoji:'🤗', text:'Qui est la personne qui t\'a le plus influencé·e ?' },
+  { id:'t032', cat:'relations', emoji:'🌹', text:'Comment tu définirais l\'amour en une phrase ?' },
+  { id:'t033', cat:'relations', emoji:'🧲', text:"Qu'est-ce qui attire les gens vers toi en général ?" },
+  { id:'t034', cat:'relations', emoji:'💬', text:'Quelle chose tu dis souvent mais ne fais jamais ?' },
+  { id:'t035', cat:'relations', emoji:'🎁', text:"Qu'est-ce qui, selon toi, ferait de toi un·e meilleur·e ami·e ?" },
+  { id:'t036', cat:'lifestyle', emoji:'🏖️', text:'Vacances idéales : plage, montagne ou ville ?' },
+  { id:'t037', cat:'lifestyle', emoji:'🌍', text:'Dans quel pays tu voudrais vivre si tu devais quitter la France ?' },
+  { id:'t038', cat:'lifestyle', emoji:'🍕', text:'Quelle est ta nourriture réconfortante ultime ?' },
+  { id:'t039', cat:'lifestyle', emoji:'☕', text:'Café, thé, ou rien — quelle est ta boisson du matin ?' },
+  { id:'t040', cat:'lifestyle', emoji:'🛌', text:'Quelle est ta position pour dormir ?' },
+  { id:'t041', cat:'lifestyle', emoji:'📱', text:'Quelle appli tu ne pourrais pas désinstaller ?' },
+  { id:'t042', cat:'lifestyle', emoji:'🚗', text:'Tu préfères conduire ou être passager·e ?' },
+  { id:'t043', cat:'lifestyle', emoji:'🍫', text:'Chocolat noir, au lait, ou blanc — et c\'est définitif ?' },
+  { id:'t044', cat:'lifestyle', emoji:'🏡', text:'Comment tu imagines ta maison idéale ?' },
+  { id:'t045', cat:'lifestyle', emoji:'🌙', text:'Tu es plutôt couche-tard ou lève-tôt ?' },
+  { id:'t046', cat:'lifestyle', emoji:'🍷', text:'Soirée idéale : solo, duo ou groupe ?' },
+  { id:'t047', cat:'lifestyle', emoji:'🌿', text:'Tu es plutôt nature ou béton — et pourquoi ?' },
+  { id:'t048', cat:'lifestyle', emoji:'😴', text:'Quel est ton rituel du soir ?' },
+  { id:'t049', cat:'lifestyle', emoji:'🌮', text:'Quel plat tu cuisinerais pour impressionner quelqu\'un ?' },
+  { id:'t050', cat:'lifestyle', emoji:'🧩', text:'Comment tu gères le stress, honnêtement ?' },
+  { id:'t051', cat:'fun', emoji:'🦸', text:'Quel super-pouvoir tu choisirais sans hésiter ?' },
+  { id:'t052', cat:'fun', emoji:'🤓', text:'Sur quoi tu es imbattable en quiz ?' },
+  { id:'t053', cat:'fun', emoji:'🐾', text:'Tu es plutôt chien ou chat — et pourquoi ?' },
+  { id:'t054', cat:'fun', emoji:'🐝', text:'Quel animal te représente le mieux ?' },
+  { id:'t055', cat:'fun', emoji:'🌈', text:'Quelle époque du passé tu aurais voulu vivre ?' },
+  { id:'t056', cat:'fun', emoji:'🛸', text:'Si tu devais habiter une autre planète, laquelle ?' },
+  { id:'t057', cat:'fun', emoji:'🎪', text:'Quel talent tu aurais voulu avoir ?' },
+  { id:'t058', cat:'fun', emoji:'🏋️', text:'Quel est ton rapport avec ton corps en ce moment ?' },
+  { id:'t059', cat:'fun', emoji:'🎡', text:'Quel est ton souvenir d\'enfance préféré ?' },
+  { id:'t060', cat:'fun', emoji:'🧸', text:'Tu as encore un objet de ton enfance que tu gardes ?' },
+  { id:'t061', cat:'fun', emoji:'🍦', text:'Salé ou sucré — et tu ne peux pas dire les deux ?' },
+  { id:'t062', cat:'fun', emoji:'🦊', text:'Si tu étais un animal, quel serait ton instinct naturel ?' },
+  { id:'t063', cat:'fun', emoji:'🤔', text:'Quelle est la question que tu te poses souvent la nuit ?' },
+  { id:'t064', cat:'fun', emoji:'🎃', text:'Quelle erreur t\'a le plus appris dans ta vie ?' },
+  { id:'t065', cat:'fun', emoji:'🌵', text:'Tu résistes combien de temps sans ton téléphone ?' },
+  { id:'t066', cat:'philo', emoji:'🔮', text:'Tu crois en quoi — karma, destin, hasard pur ?' },
+  { id:'t067', cat:'philo', emoji:'🌅', text:"Qu'est-ce qui donne du sens à ta vie ?" },
+  { id:'t068', cat:'philo', emoji:'🔭', text:'Comment tu imagines ta vie dans 10 ans ?' },
+  { id:'t069', cat:'philo', emoji:'🌠', text:'Si tu pouvais revenir 5 ans en arrière, tu changerais quoi ?' },
+  { id:'t070', cat:'philo', emoji:'📝', text:'Si tu pouvais écrire une lettre à ton futur toi, tu lui dirais quoi ?' },
+  { id:'t071', cat:'philo', emoji:'🌍', text:'Quelle injustice dans le monde te révolte le plus ?' },
+  { id:'t072', cat:'philo', emoji:'🧭', text:'Tu vis plutôt dans le passé, le présent ou le futur ?' },
+  { id:'t073', cat:'philo', emoji:'🌊', text:'Tu flottes ou tu coules face à l\'incertitude ?' },
+  { id:'t074', cat:'philo', emoji:'🎑', text:'Quel est le moment où tu t\'es senti·e le plus libre ?' },
+  { id:'t075', cat:'philo', emoji:'🌻', text:"Qu'est-ce qui te manquerait le plus sans internet ?" },
+  { id:'t076', cat:'philo', emoji:'🔑', text:'Quelle est la clé de ton bonheur selon toi ?' },
+  { id:'t077', cat:'philo', emoji:'🤲', text:'De quoi tu te sens le plus reconnaissant·e en ce moment ?' },
+  { id:'t078', cat:'philo', emoji:'🎗️', text:'Quelle cause ou sujet te tient vraiment à cœur ?' },
+  { id:'t079', cat:'philo', emoji:'💎', text:'Quel est ton objet le plus précieux sentimentalement ?' },
+  { id:'t080', cat:'philo', emoji:'🏆', text:'Quelle est ta plus grande victoire personnelle ?' },
+  { id:'t081', cat:'fun', emoji:'💸', text:'Si tu gagnais 1 million €, quelle est la première chose que tu ferais ?' },
+  { id:'t082', cat:'lifestyle', emoji:'🧳', text:'Si tu devais partir demain, quelle destination tu choisirais ?' },
+  { id:'t083', cat:'perso', emoji:'🎲', text:'Tu es plutôt risque ou sécurité dans ta vie ?' },
+  { id:'t084', cat:'relations', emoji:'🍻', text:'Dans un groupe, quel est ton rôle instinctif ?' },
+  { id:'t085', cat:'perso', emoji:'👻', text:'Quel est ton côté sombre que peu de gens connaissent ?' },
+  { id:'t086', cat:'perso', emoji:'🌺', text:"Qu'est-ce qui te met instantanément de bonne humeur ?" },
+  { id:'t087', cat:'perso', emoji:'🎠', text:'Quel est ton moment de pure joie cette semaine ?' },
+  { id:'t088', cat:'lifestyle', emoji:'🌃', text:'Paris ou New York pour vivre ?' },
+  { id:'t089', cat:'relations', emoji:'🤭', text:'Quelle est l\'opinion impopulaire absolue que tu assumes ?' },
+  { id:'t090', cat:'philo', emoji:'📷', text:'Si tu prenais une photo de ta vie actuelle, ça ressemblerait à quoi ?' },
+  { id:'t091', cat:'fun', emoji:'🏄', text:'Quelle aventure tu veux vivre avant tes 80 ans ?' },
+  { id:'t092', cat:'philo', emoji:'🌺', text:'Quelle activité te ressource totalement ?' },
+  { id:'t093', cat:'perso', emoji:'🎬', text:'Quel personnage de fiction tu penses être dans ta vie ?' },
+  { id:'t094', cat:'perso', emoji:'⚡', text:'Quelle chose t\'énerve le plus dans la vie quotidienne ?' },
+  { id:'t095', cat:'relations', emoji:'🌙', text:'Quel est le dernier truc que tu as fait pour quelqu\'un sans rien attendre ?' },
+  { id:'t096', cat:'lifestyle', emoji:'🥂', text:'Quel serait ton dîner de rêve idéal ?' },
+  { id:'t097', cat:'culture', emoji:'🎵', text:'Quelle est la musique qui définit ton adolescence ?' },
+  { id:'t098', cat:'perso', emoji:'💭', text:'Si tu pouvais changer une chose en toi, laquelle ?' },
+  { id:'t099', cat:'fun', emoji:'🧁', text:'Si tu étais un dessert, tu serais lequel ?' },
+  { id:'t100', cat:'philo', emoji:'🌍', text:"Si tu pouvais vivre n'importe quelle autre vie que la tienne, laquelle ?" },
+];
+
+// ==============================================
+//  STORAGE (localStorage)
+// ==============================================
+const STORAGE_KEYS = {
+  disabledThemes: 'qads_disabled_themes',
+  customThemes: 'qads_custom_themes',
+  profiles: 'qads_profiles',
+  rounds: 'qads_rounds',
+};
+
+function loadStorage(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch(e) { return fallback; }
+}
+function saveStorage(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+// ==============================================
+//  APP STATE
+// ==============================================
+let appState = {
+  disabledThemes: new Set(loadStorage(STORAGE_KEYS.disabledThemes, [])),
+  customThemes: loadStorage(STORAGE_KEYS.customThemes, []),
+  profiles: loadStorage(STORAGE_KEYS.profiles, []),
+  rounds: loadStorage(STORAGE_KEYS.rounds, 5),
+};
+
+let settingsActiveTab = 'themes';
+let activeCatFilter = 'all';
+
+// Profile modal state
+let editingProfileId = null;
+let selectedEmoji = '🐺';
+let selectedColor = '#E8613A';
+
+// Game state
+let game = {};
+
+// ==============================================
+//  NAVIGATION
+// ==============================================
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('nav-' + tab).classList.add('active');
+  if (tab === 'settings') renderSettings();
+  if (tab === 'home') updateHomeStats();
+}
+
+function gameGoTo(screenId) {
+  document.querySelectorAll('#game-overlay .screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  document.getElementById('game-overlay').scrollTop = 0;
+}
+
+function exitGame() {
+  document.getElementById('game-overlay').classList.add('hidden');
+  document.getElementById('bottom-nav').classList.remove('hidden');
+  updateHomeStats();
+}
+
+function showHowTo() {
+  const el = document.getElementById('howto');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function goToSetup() {
+  document.getElementById('game-overlay').classList.remove('hidden');
+  document.getElementById('bottom-nav').classList.add('hidden');
+  gameGoTo('screen-setup');
+  game = {
+    players: [],
+    scores: {},
+    rounds: appState.rounds,
+    currentRound: 0,
+    usedThemes: [],
+    currentTheme: null,
+    answers: {},
+    assignments: {},
+    guesses: {},
+    answerOrder: [],
+    currentAnswererIdx: 0,
+    guessOrder: [],
+    currentGuesserIdx: 0,
+  };
+  renderSetupPlayers();
+}
+
+// ==============================================
+//  HOME STATS
+// ==============================================
+function updateHomeStats() {
+  const allThemes = getAllActiveThemes();
+  document.getElementById('home-theme-count').textContent = `${allThemes.length} thème${allThemes.length!==1?'s':''} actif${allThemes.length!==1?'s':''}`;
+  document.getElementById('home-round-count').textContent = `${appState.rounds} tours par partie`;
+}
+
+function getAllActiveThemes() {
+  const all = [...BASE_THEMES, ...appState.customThemes];
+  return all.filter(t => !appState.disabledThemes.has(t.id));
+}
+
+// ==============================================
+//  SETTINGS
+// ==============================================
+function openSettingsTab(tab) {
+  settingsActiveTab = tab;
+  document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('stab-' + tab).classList.add('active');
+  document.querySelectorAll('[id^="spanel-"]').forEach(p => p.classList.add('hidden'));
+  document.getElementById('spanel-' + tab).classList.remove('hidden');
+  if (tab === 'themes') renderThemes();
+  if (tab === 'profiles') renderProfiles();
+  if (tab === 'game') renderGameSettings();
+}
+
+function renderSettings() {
+  openSettingsTab(settingsActiveTab);
+}
+
+// ----- THEMES -----
+function renderThemes() {
+  // Category filter
+  const catFilterEl = document.getElementById('cat-filter');
+  catFilterEl.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = `cat-chip ${activeCatFilter === 'all' ? 'active' : ''}`;
+  if (activeCatFilter === 'all') {
+    allBtn.style.background = '#1A1209';
+    allBtn.style.borderColor = '#1A1209';
+    allBtn.style.color = '#F5F0E8';
+  }
+  allBtn.textContent = '✨ Tous';
+  allBtn.onclick = () => { activeCatFilter = 'all'; renderThemes(); };
+  catFilterEl.appendChild(allBtn);
+
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = `cat-chip ${activeCatFilter === cat.id ? 'active' : ''}`;
+    if (activeCatFilter === cat.id) {
+      btn.style.background = cat.color;
+      btn.style.borderColor = cat.color;
+    } else {
+      btn.style.borderColor = cat.color + '60';
+      btn.style.color = cat.color;
+    }
+    btn.textContent = cat.emoji + ' ' + cat.label;
+    btn.onclick = () => { activeCatFilter = cat.id; renderThemes(); };
+    catFilterEl.appendChild(btn);
+  });
+
+  // Count
+  const all = [...BASE_THEMES, ...appState.customThemes];
+  const active = all.filter(t => !appState.disabledThemes.has(t.id)).length;
+  document.getElementById('active-count').textContent = `${active}/${all.length}`;
+
+  // Theme list
+  const listEl = document.getElementById('theme-list');
+  listEl.innerHTML = '';
+  const filtered = all.filter(t => activeCatFilter === 'all' || t.cat === activeCatFilter);
+
+  filtered.forEach(theme => {
+    const isOn = !appState.disabledThemes.has(theme.id);
+    const isCustom = !!appState.customThemes.find(c => c.id === theme.id);
+    const cat = CATEGORIES.find(c => c.id === theme.cat);
+    const div = document.createElement('div');
+    div.className = `theme-item ${!isOn ? 'disabled' : ''}`;
+    div.innerHTML = `
+      <span class="theme-item-emoji">${theme.emoji}</span>
+      <div style="flex:1;">
+        <div class="theme-item-text">${theme.text}</div>
+        ${cat ? `<div style="font-size:0.68rem; font-weight:600; color:${cat.color}; margin-top:2px; opacity:0.8;">${cat.emoji} ${cat.label}</div>` : ''}
+      </div>
+      ${isCustom ? `<button class="btn-icon-sm" style="background:var(--rose); color:white;" onclick="deleteCustomTheme('${theme.id}')">✕</button>` : ''}
+      <button class="toggle-switch ${isOn ? 'on' : 'off'}" onclick="toggleTheme('${theme.id}')"></button>
+    `;
+    listEl.appendChild(div);
+  });
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center; opacity:0.4; padding:24px; font-size:0.85rem;">Aucun thème dans cette catégorie</div>';
+  }
+}
+
+function toggleTheme(id) {
+  if (appState.disabledThemes.has(id)) {
+    appState.disabledThemes.delete(id);
+  } else {
+    appState.disabledThemes.add(id);
+  }
+  saveStorage(STORAGE_KEYS.disabledThemes, [...appState.disabledThemes]);
+  renderThemes();
+}
+
+function toggleAllThemes(on) {
+  const all = [...BASE_THEMES, ...appState.customThemes];
+  if (on) {
+    appState.disabledThemes.clear();
+  } else {
+    all.forEach(t => appState.disabledThemes.add(t.id));
+  }
+  saveStorage(STORAGE_KEYS.disabledThemes, [...appState.disabledThemes]);
+  renderThemes();
+}
+
+function addCustomTheme() {
+  const emojiEl = document.getElementById('custom-emoji-input');
+  const textEl = document.getElementById('custom-theme-input');
+  const text = textEl.value.trim();
+  if (!text) { textEl.style.borderColor = 'var(--warm)'; setTimeout(() => textEl.style.borderColor = '', 1000); return; }
+  const emoji = emojiEl.value.trim() || '🎯';
+  const id = 'custom_' + Date.now();
+  const theme = { id, cat: 'custom', emoji, text };
+  appState.customThemes.push(theme);
+  saveStorage(STORAGE_KEYS.customThemes, appState.customThemes);
+  emojiEl.value = '';
+  textEl.value = '';
+  activeCatFilter = 'custom';
+  renderThemes();
+  showToast('Thème ajouté ! ✓');
+}
+
+function deleteCustomTheme(id) {
+  appState.customThemes = appState.customThemes.filter(t => t.id !== id);
+  appState.disabledThemes.delete(id);
+  saveStorage(STORAGE_KEYS.customThemes, appState.customThemes);
+  saveStorage(STORAGE_KEYS.disabledThemes, [...appState.disabledThemes]);
+  renderThemes();
+}
+
+// ----- GAME SETTINGS -----
+function renderGameSettings() {
+  document.getElementById('rounds-display').textContent = appState.rounds;
+}
+
+function changeRounds(delta) {
+  appState.rounds = Math.max(1, Math.min(20, appState.rounds + delta));
+  saveStorage(STORAGE_KEYS.rounds, appState.rounds);
+  document.getElementById('rounds-display').textContent = appState.rounds;
+}
+
+// ==============================================
+//  PROFILES
+// ==============================================
+function renderProfiles() {
+  const list = document.getElementById('profile-list');
+  const empty = document.getElementById('no-profiles');
+  const count = document.getElementById('profile-count');
+  count.textContent = appState.profiles.length;
+  list.innerHTML = '';
+
+  if (appState.profiles.length === 0) {
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  appState.profiles.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'profile-card';
+    const wins = p.wins || 0;
+    const played = p.gamesPlayed || 0;
+    el.innerHTML = `
+      <div class="profile-avatar-big" style="background:${p.color}20; color:${p.color}; border-color:${p.color};">
+        ${p.emoji}
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">${p.name}</div>
+        <div class="profile-stats">${played} partie${played!==1?'s':''} · ${wins} victoire${wins!==1?'s':''}</div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn-icon-sm" style="background:rgba(26,18,9,0.08);" onclick="openProfileModal('${p.id}')">✏️</button>
+        <button class="btn-icon-sm" style="background:rgba(201,107,138,0.15); color:var(--rose);" onclick="deleteProfile('${p.id}')">🗑</button>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+function openProfileModal(editId) {
+  editingProfileId = editId || null;
+  const modal = document.getElementById('modal-profile');
+  const titleEl = document.getElementById('modal-profile-title');
+  const nameEl = document.getElementById('profile-name-input');
+
+  if (editId) {
+    const profile = appState.profiles.find(p => p.id === editId);
+    titleEl.textContent = 'Modifier le profil';
+    nameEl.value = profile.name;
+    selectedEmoji = profile.emoji;
+    selectedColor = profile.color;
+  } else {
+    titleEl.textContent = 'Créer un profil';
+    nameEl.value = '';
+    selectedEmoji = PLAYER_EMOJIS[Math.floor(Math.random() * PLAYER_EMOJIS.length)];
+    selectedColor = PLAYER_COLORS[Math.floor(Math.random() * PLAYER_COLORS.length)];
+  }
+
+  renderEmojiGrid();
+  renderColorGrid();
+  modal.classList.remove('hidden');
+  setTimeout(() => nameEl.focus(), 200);
+}
+
+function closeProfileModal() {
+  document.getElementById('modal-profile').classList.add('hidden');
+  editingProfileId = null;
+}
+
+function closeProfileModalOnBg(e) {
+  if (e.target === document.getElementById('modal-profile')) closeProfileModal();
+}
+
+function renderEmojiGrid() {
+  const grid = document.getElementById('emoji-grid');
+  grid.innerHTML = '';
+  PLAYER_EMOJIS.forEach(em => {
+    const btn = document.createElement('button');
+    btn.className = `emoji-opt ${em === selectedEmoji ? 'selected' : ''}`;
+    btn.textContent = em;
+    btn.onclick = () => {
+      selectedEmoji = em;
+      document.querySelectorAll('.emoji-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function renderColorGrid() {
+  const grid = document.getElementById('color-grid');
+  grid.innerHTML = '';
+  PLAYER_COLORS.forEach(col => {
+    const btn = document.createElement('button');
+    btn.className = `color-opt ${col === selectedColor ? 'selected' : ''}`;
+    btn.style.background = col;
+    btn.onclick = () => {
+      selectedColor = col;
+      document.querySelectorAll('.color-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function saveProfile() {
+  const name = document.getElementById('profile-name-input').value.trim();
+  if (!name) {
+    document.getElementById('profile-name-input').style.borderColor = 'var(--warm)';
+    setTimeout(() => document.getElementById('profile-name-input').style.borderColor = '', 1000);
+    return;
+  }
+  if (editingProfileId) {
+    const p = appState.profiles.find(p => p.id === editingProfileId);
+    if (p) { p.name = name; p.emoji = selectedEmoji; p.color = selectedColor; }
+  } else {
+    appState.profiles.push({ id: 'p_' + Date.now(), name, emoji: selectedEmoji, color: selectedColor, gamesPlayed: 0, wins: 0 });
+  }
+  saveStorage(STORAGE_KEYS.profiles, appState.profiles);
+  closeProfileModal();
+  renderProfiles();
+  showToast(editingProfileId ? 'Profil modifié ✓' : 'Profil créé ! ✓');
+}
+
+function deleteProfile(id) {
+  appState.profiles = appState.profiles.filter(p => p.id !== id);
+  saveStorage(STORAGE_KEYS.profiles, appState.profiles);
+  renderProfiles();
+}
+
+// ==============================================
+//  GAME SETUP
+// ==============================================
+function renderSetupPlayers() {
+  // Saved profiles quick-add
+  const section = document.getElementById('saved-profiles-section');
+  const list = document.getElementById('saved-profiles-list');
+  if (appState.profiles.length > 0) {
+    section.classList.remove('hidden');
+    list.innerHTML = '';
+    appState.profiles.forEach(p => {
+      const btn = document.createElement('button');
+      btn.style.cssText = `display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:50px; border:2px solid ${p.color}; background:${p.color}15; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--ink); transition:all 0.18s;`;
+      btn.innerHTML = `<span>${p.emoji}</span><span>${p.name}</span>`;
+      btn.dataset.profileId = p.id;
+      btn.onclick = () => addPlayerFromProfile(p, btn);
+      list.appendChild(btn);
+    });
+  } else {
+    section.classList.add('hidden');
+  }
+  renderPlayerList();
+}
+
+function addPlayerFromProfile(profile, btn) {
+  if (game.players.includes(profile.name)) {
+    showToast('Déjà dans la liste !');
+    return;
+  }
+  game.players.push(profile.name);
+  game.scores[profile.name] = 0;
+  btn.style.opacity = '0.4';
+  btn.style.pointerEvents = 'none';
+  renderPlayerList();
+}
+
+function addPlayer() {
+  const input = document.getElementById('player-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (game.players.includes(name)) { showToast('Déjà dans la liste !'); return; }
+  game.players.push(name);
+  game.scores[name] = 0;
+  input.value = '';
+  renderPlayerList();
+  input.focus();
+}
+
+function removePlayer(idx) {
+  game.players.splice(idx, 1);
+  renderPlayerList();
+}
+
+function renderPlayerList() {
+  const list = document.getElementById('player-list');
+  list.innerHTML = '';
+  game.players.forEach((p, i) => {
+    const profile = appState.profiles.find(pr => pr.name === p);
+    const emoji = profile ? profile.emoji : PLAYER_EMOJIS[i % PLAYER_EMOJIS.length];
+    const color = profile ? profile.color : PLAYER_COLORS[i % PLAYER_COLORS.length];
+    const el = document.createElement('div');
+    el.className = 'player-chip';
+    el.innerHTML = `
+      <div class="player-avatar" style="background:${color}20; color:${color}; border-color:${color};">${emoji}</div>
+      <span class="player-name-text">${p}</span>
+      <button onclick="removePlayer(${i})" style="background:none; border:none; cursor:pointer; font-size:1rem; opacity:0.4; padding:4px;">✕</button>
+    `;
+    list.appendChild(el);
+  });
+  const hint = document.getElementById('player-count-hint');
+  const btn = document.getElementById('btn-start-game');
+  if (game.players.length >= 3) {
+    hint.style.display = 'none';
+    btn.style.display = 'flex';
+  } else {
+    hint.style.display = 'block';
+    hint.textContent = game.players.length === 0 ? 'Ajoutez au moins 3 joueurs' : `Encore ${3 - game.players.length} joueur(s) minimum`;
+    btn.style.display = 'none';
+  }
+}
+
+function startGame() {
+  if (game.players.length < 3) return;
+  game.rounds = appState.rounds;
+  game.currentRound = 0;
+  game.scores = {};
+  game.players.forEach(p => game.scores[p] = 0);
+  startRound();
+}
+
+// ==============================================
+//  ROUND FLOW
+// ==============================================
+function getActivePool() {
+  const all = [...BASE_THEMES, ...appState.customThemes];
+  return all.filter(t => !appState.disabledThemes.has(t.id));
+}
+
+function pickTheme() {
+  const pool = getActivePool();
+  const available = pool.filter(t => !game.usedThemes.includes(t.id));
+  const source = available.length > 0 ? available : pool;
+  if (source.length === 0) return { id:'fallback', cat:'fun', emoji:'🎲', text:'Racontez une anecdote insolite !' };
+  const t = source[Math.floor(Math.random() * source.length)];
+  game.usedThemes.push(t.id);
+  return t;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function generateAssignments(n) {
+  let assignment, attempts = 0;
+  do {
+    attempts++;
+    const s = shuffle([...Array(n).keys()]);
+    if (s.every((v,i) => v !== i)) assignment = s;
+  } while (!assignment && attempts < 1000);
+  if (!assignment) assignment = [...Array(n).keys()].map(i => (i+1)%n);
+  const result = {};
+  for (let i=0; i<n; i++) result[i] = assignment[i];
+  return result;
+}
+
+function startRound() {
+  game.currentRound++;
+  game.answers = {};
+  game.guesses = {};
+  game.currentTheme = pickTheme();
+  game.answerOrder = shuffle([...Array(game.players.length).keys()]);
+  game.currentAnswererIdx = 0;
+
+  document.getElementById('round-num').textContent = game.currentRound;
+  document.getElementById('round-badge').textContent = `Tour ${game.currentRound}/${game.rounds}`;
+  document.getElementById('theme-emoji').textContent = game.currentTheme.emoji;
+  document.getElementById('theme-text').textContent = game.currentTheme.text;
+
+  const card = document.getElementById('theme-card');
+  card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+  gameGoTo('screen-theme');
+}
+
+function startAnswering() { showPassScreen(); }
+
+function showPassScreen() {
+  const pIdx = game.answerOrder[game.currentAnswererIdx];
+  document.getElementById('pass-name').textContent = game.players[pIdx];
+  document.getElementById('pass-theme-recap').textContent = game.currentTheme.emoji + ' ' + game.currentTheme.text;
+  gameGoTo('screen-pass');
+}
+
+function goToAnswer() {
+  const total = game.players.length;
+  const current = game.currentAnswererIdx + 1;
+  document.getElementById('answer-emoji').textContent = game.currentTheme.emoji;
+  document.getElementById('answer-theme').textContent = game.currentTheme.text;
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-progress-text').textContent = `${current}/${total}`;
+  document.getElementById('answer-progress-bar').style.width = `${(current/total)*100}%`;
+  gameGoTo('screen-answer');
+}
+
+function submitAnswer() {
+  const val = document.getElementById('answer-input').value.trim();
+  if (!val) {
+    document.getElementById('answer-input').style.borderColor = 'var(--warm)';
+    setTimeout(() => document.getElementById('answer-input').style.borderColor = '', 1000);
+    return;
+  }
+  const pIdx = game.answerOrder[game.currentAnswererIdx];
+  game.answers[pIdx] = val;
+  game.currentAnswererIdx++;
+  if (game.currentAnswererIdx < game.players.length) {
+    showPassScreen();
+  } else {
+    game.assignments = generateAssignments(game.players.length);
+    game.guessOrder = shuffle([...Array(game.players.length).keys()]);
+    game.currentGuesserIdx = 0;
+    showPassGuessScreen();
+  }
+}
+
+function showPassGuessScreen() {
+  const gIdx = game.guessOrder[game.currentGuesserIdx];
+  document.getElementById('pass-guess-name').textContent = game.players[gIdx];
+  gameGoTo('screen-pass-guess');
+}
+
+function goToGuess() {
+  const gIdx = game.guessOrder[game.currentGuesserIdx];
+  const aIdx = game.assignments[gIdx];
+  const answerText = game.answers[aIdx];
+  const total = game.players.length;
+  const current = game.currentGuesserIdx + 1;
+
+  document.getElementById('guess-progress-text').textContent = `${current}/${total}`;
+  document.getElementById('guess-progress-bar').style.width = `${(current/total)*100}%`;
+  document.getElementById('guess-answer-text').textContent = `"${answerText}"`;
+
+  const container = document.getElementById('guess-player-options');
+  container.innerHTML = '';
+  game.players.forEach((name, idx) => {
+    if (idx === gIdx) return;
+    const profile = appState.profiles.find(pr => pr.name === name);
+    const emoji = profile ? profile.emoji : PLAYER_EMOJIS[idx % PLAYER_EMOJIS.length];
+    const color = profile ? profile.color : PLAYER_COLORS[idx % PLAYER_COLORS.length];
+    const div = document.createElement('div');
+    div.className = 'player-option';
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <div class="avatar-sm" style="color:${color}; border-color:${color}; background:${color}10;">${emoji}</div>
+      <span class="opt-name">${name}</span>
+      <div class="radio-circle"></div>
+    `;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('.player-option').forEach(o => o.classList.remove('selected'));
+      div.classList.add('selected');
+    });
+    container.appendChild(div);
+  });
+
+  if (game.guesses[gIdx] !== undefined) {
+    const prev = container.querySelector(`[data-idx="${game.guesses[gIdx]}"]`);
+    if (prev) prev.classList.add('selected');
+  }
+  gameGoTo('screen-guess');
+}
+
+function submitGuess() {
+  const selected = document.querySelector('#screen-guess .player-option.selected');
+  if (!selected) {
+    document.getElementById('btn-submit-guess').style.background = 'var(--rose)';
+    setTimeout(() => document.getElementById('btn-submit-guess').style.background = '', 800);
+    return;
+  }
+  const gIdx = game.guessOrder[game.currentGuesserIdx];
+  game.guesses[gIdx] = parseInt(selected.dataset.idx);
+  game.currentGuesserIdx++;
+  if (game.currentGuesserIdx < game.players.length) {
+    showPassGuessScreen();
+  } else {
+    computeScores();
+  }
+}
+
+// ==============================================
+//  SCORE & REVEAL
+// ==============================================
+function computeScores() {
+  const delta = {};
+  game.players.forEach((_,i) => delta[i] = 0);
+  game.players.forEach((_,gIdx) => {
+    const aIdx = game.assignments[gIdx];
+    if (game.guesses[gIdx] === aIdx) { delta[gIdx]++; delta[aIdx]--; }
+  });
+  game.players.forEach((name,idx) => { game.scores[name] += delta[idx]; });
+  renderReveal(delta);
+}
+
+function renderReveal(delta) {
+  document.getElementById('reveal-round').textContent = game.currentRound;
+  document.getElementById('reveal-emoji').textContent = game.currentTheme.emoji;
+  document.getElementById('reveal-theme').textContent = game.currentTheme.text;
+
+  const list = document.getElementById('reveal-list');
+  list.innerHTML = '';
+
+  game.players.forEach((authorName, aIdx) => {
+    const answer = game.answers[aIdx];
+    const profile = appState.profiles.find(p => p.name === authorName);
+    const emoji = profile ? profile.emoji : PLAYER_EMOJIS[aIdx % PLAYER_EMOJIS.length];
+    const color = profile ? profile.color : PLAYER_COLORS[aIdx % PLAYER_COLORS.length];
+
+    const guessersOfThis = [];
+    game.players.forEach((_,gIdx) => {
+      if (game.assignments[gIdx] === aIdx) guessersOfThis.push({ gIdx, right: game.guesses[gIdx] === aIdx });
+    });
+
+    const guessTags = guessersOfThis.map(g => {
+      const cls = g.right ? 'correct' : 'wrong';
+      const icon = g.right ? '✓' : '✗';
+      return `<span class="guess-tag ${cls}">${icon} ${game.players[g.gIdx]}</span>`;
+    }).join('');
+
+    const d = delta[aIdx];
+    const dHtml = d > 0 ? `<span style="color:var(--sage)">+${d}</span>` : d < 0 ? `<span style="color:var(--warm)">${d}</span>` : `<span style="opacity:0.4">±0</span>`;
+
+    const item = document.createElement('div');
+    item.className = 'reveal-item';
+    item.innerHTML = `
+      <div class="reveal-answer">"${answer}"</div>
+      <div class="reveal-author">
+        <span style="font-size:1.05rem;">${emoji}</span>
+        <span style="color:${color}; font-size:0.9rem;">${authorName}</span>
+        <span style="margin-left:auto; font-family:'Fraunces',serif; font-size:1.05rem;">${dHtml}</span>
+      </div>
+      ${guessersOfThis.length > 0 ? `<div style="display:flex; flex-wrap:wrap; gap:5px;">${guessTags}</div>` : ''}
+    `;
+    list.appendChild(item);
+  });
+
+  // Current scores
+  const scDiv = document.createElement('div');
+  scDiv.style.cssText = 'width:100%; margin-top:6px;';
+  scDiv.innerHTML = '<div class="section-label mb-2">Scores actuels</div>';
+  const sorted = [...game.players].sort((a,b) => game.scores[b] - game.scores[a]);
+  sorted.forEach((name, rank) => {
+    const idx = game.players.indexOf(name);
+    const profile = appState.profiles.find(p => p.name === name);
+    const emoji = profile ? profile.emoji : PLAYER_EMOJIS[idx % PLAYER_EMOJIS.length];
+    const sc = game.scores[name];
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid rgba(26,18,9,0.07);';
+    el.innerHTML = `
+      <span style="font-size:0.75rem; opacity:0.35; min-width:18px;">#${rank+1}</span>
+      <span style="font-size:1rem;">${emoji}</span>
+      <span style="font-weight:600; flex:1; font-size:0.9rem;">${name}</span>
+      <span style="font-family:'Fraunces',serif; font-weight:700; font-size:1.1rem; ${sc>0?'color:var(--sage)':sc<0?'color:var(--warm)':''};">${sc>0?'+':''}${sc}</span>
+    `;
+    scDiv.appendChild(el);
+  });
+  list.appendChild(scDiv);
+
+  const isLast = game.currentRound >= game.rounds;
+  document.getElementById('btn-next-round').classList.toggle('hidden', isLast);
+  document.getElementById('btn-final-score').classList.toggle('hidden', !isLast);
+  if (isLast) fireConfetti();
+  gameGoTo('screen-reveal');
+}
+
+function nextRound() { startRound(); }
+
+function goToFinalScore() {
+  renderFinalScores();
+  gameGoTo('screen-final');
+}
+
+function renderFinalScores() {
+  const sorted = [...game.players].sort((a,b) => game.scores[b] - game.scores[a]);
+
+  // Update profile stats
+  if (sorted.length > 0) {
+    const winner = sorted[0];
+    appState.profiles.forEach(p => {
+      if (game.players.includes(p.name)) {
+        p.gamesPlayed = (p.gamesPlayed || 0) + 1;
+        if (p.name === winner) p.wins = (p.wins || 0) + 1;
+      }
+    });
+    saveStorage(STORAGE_KEYS.profiles, appState.profiles);
+  }
+
+  const podium = document.getElementById('final-podium');
+  podium.innerHTML = '';
+  const places = [{ h:100, cls:'gold' },{ h:70, cls:'silver' },{ h:50, cls:'bronze' }];
+  const order = sorted.length >= 3 ? [1,0,2] : sorted.length === 2 ? [1,0] : [0];
+  const podiumEl = document.createElement('div');
+  podiumEl.className = 'podium-bar';
+  order.forEach(rank => {
+    if (rank >= sorted.length) return;
+    const name = sorted[rank];
+    const idx = game.players.indexOf(name);
+    const profile = appState.profiles.find(p => p.name === name);
+    const emoji = profile ? profile.emoji : PLAYER_EMOJIS[idx % PLAYER_EMOJIS.length];
+    const sc = game.scores[name];
+    const pl = places[rank];
+    const col = document.createElement('div');
+    col.className = 'podium-col';
+    col.innerHTML = `
+      <div style="font-size:1.5rem;">${emoji}</div>
+      <div class="podium-name">${name}</div>
+      <div class="podium-block ${pl.cls}" style="height:${pl.h}px;">${sc>0?'+':''}${sc}</div>
+    `;
+    podiumEl.appendChild(col);
+  });
+  podium.appendChild(podiumEl);
+
+  const full = document.getElementById('final-full-scores');
+  full.innerHTML = '<div class="section-label mb-3">Classement complet</div>';
+  sorted.forEach((name, rank) => {
+    const idx = game.players.indexOf(name);
+    const profile = appState.profiles.find(p => p.name === name);
+    const emoji = profile ? profile.emoji : PLAYER_EMOJIS[idx % PLAYER_EMOJIS.length];
+    const color = profile ? profile.color : PLAYER_COLORS[idx % PLAYER_COLORS.length];
+    const sc = game.scores[name];
+    const el = document.createElement('div');
+    el.className = 'player-chip';
+    el.innerHTML = `
+      <span style="font-size:0.82rem; opacity:0.35; min-width:20px; font-weight:700;">#${rank+1}</span>
+      <div class="player-avatar" style="background:${color}20; color:${color}; border-color:${color};">${emoji}</div>
+      <span class="player-name-text">${name}</span>
+      <span class="score-badge ${sc>0?'score-pos':sc<0?'score-neg':''}">${sc>0?'+':''}${sc}</span>
+    `;
+    full.appendChild(el);
+  });
+  fireConfetti();
+}
+
+function restartGame() {
+  game.scores = {};
+  game.players.forEach(p => game.scores[p] = 0);
+  game.currentRound = 0;
+  game.usedThemes = [];
+  startRound();
+}
+
+// ==============================================
+//  UTILS
+// ==============================================
+function fireConfetti() {
+  const colors = ['var(--warm)','var(--gold)','var(--sage)','var(--lavender)','var(--rose)','#4A8FB5','#F4A07A'];
+  for (let i=0; i<36; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.left = Math.random()*100+'vw';
+      p.style.background = colors[Math.floor(Math.random()*colors.length)];
+      p.style.width = (5+Math.random()*8)+'px';
+      p.style.height = (5+Math.random()*8)+'px';
+      p.style.borderRadius = Math.random()>0.5?'50%':'2px';
+      p.style.animationDuration = (1.4+Math.random()*2)+'s';
+      p.style.animationDelay = Math.random()*0.6+'s';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 4000);
+    }, i*30);
+  }
+}
+
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ==============================================
+//  INIT
+// ==============================================
+document.getElementById('player-input').addEventListener('keypress', e => {
+  if (e.key === 'Enter') { e.preventDefault(); addPlayer(); }
+});
+
+updateHomeStats();
+</script>
+</body>
+</html>
