@@ -13,6 +13,7 @@
         :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; }
         body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); text-align: center; padding: 40px 20px; }
         h1 { font-family: 'Fraunces', serif; font-size: 2.5rem; margin-bottom: 40px; }
+        h2 { font-family: 'Fraunces', serif; font-size: 1rem; margin-bottom: 20; }
         .menu-grid { display: grid; gap: 20px; max-width: 400px; margin: 0 auto; }
         .app-card { 
             background: white; padding: 25px; border-radius: 20px; 
@@ -26,19 +27,35 @@
 </head>
 <body>
     <h1>Les applications de Jojo</h1>
-    <h2>Applications et outils - open source</h2>
+    <h2>Outils :</h2>
     <div class="menu-grid">
-        <a href="qui-a-dit.html" class="app-card">
-            <span class="emoji">💬</span> Qui a écrit ça ?
-        </a>
-        <a href="compteurv2.html" class="app-card">
+        <a href="compteur.html" class="app-card">
             <span class="emoji">🔢</span> Compteur de points
         </a>
         <a href="todo.html" class="app-card">
             <span class="emoji">📝</span> Ma To-Do Liste
         </a>
+        
+    </div>
+    <h2>Jeux multis :</h2>
+    <div class="menu-grid">
+        <a href="qui-a-dit.html" class="app-card">
+            <span class="emoji">💬</span> Qui a écrit ça ?
+        </a>
         <a href="puissance4.html" class="app-card">
             <span class="emoji">🔴</span> Puissance 4
+        </a>
+    </div>
+    <h2>Jeux solos :</h2>
+    <div class="menu-grid">
+        <a href="demineur.html" class="app-card solo">
+            <span class="emoji">💣</span> Démineur
+        </a>
+        <a href="solitaire_cartes.html" class="app-card solo">
+            <span class="emoji">🃏</span> Cartes
+        </a>
+        <a href="solitaire_bille.html" class="app-card solo">
+            <span class="emoji">♟️</span> Billes
         </a>
     </div>
 </body>
