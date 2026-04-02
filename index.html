@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Les apps de jojo">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Les applications de Jojo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); text-align: center; padding: 40px 20px; }
+        h1 { font-family: 'Fraunces', serif; font-size: 2.5rem; margin-bottom: 40px; }
+        .menu-grid { display: grid; gap: 20px; max-width: 400px; margin: 0 auto; }
+        .app-card { 
+            background: white; padding: 25px; border-radius: 20px; 
+            text-decoration: none; color: var(--ink); font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        .app-card:active { transform: scale(0.95); border-color: var(--warm); }
+        .emoji { font-size: 2rem; display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Les applications de Jojo</h1>
+    <div class="menu-grid">
+        <a href="qui-a-dit.html" class="app-card">
+            <span class="emoji">💬</span> Qui a dit ça ?
+        </a>
+        <a href="compteur.html" class="app-card">
+            <span class="emoji">🔢</span> Compteur de points
+        </a>
+    </div>
+</body>
+</html>
