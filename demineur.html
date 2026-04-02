@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Démineur Jojo</title>
+    <style>
+        :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; --sage: #6B8F71; }
+        body { font-family: sans-serif; background: var(--cream); text-align: center; color: var(--ink); margin: 0; padding: 10px; }
+        .grid { display: inline-grid; gap: 4px; background: var(--ink); padding: 8px; border-radius: 12px; margin-top: 15px; }
+        .cell { width: 32px; height: 32px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: white; font-size: 1rem; }
+        .cell.revealed { background: var(--cream); color: var(--ink); }
+        .cell.mine { background: var(--warm); }
+        .cell.flag { background: var(--sage); }
+        .controls { margin: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .difficulty-btns { display: flex; gap: 5px; }
+        .btn { background: var(--ink); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; }
+        .btn.active { background: var(--sage); }
+    </style>
+</head>
+<body>
+    <h2>💣 Démineur</h2>
+    <div class="controls">
+        <div class="difficulty-btns">
+            <button class="btn" id="diff-8" onclick="setDifficulty(8, 10)">Petit</button>
+            <button class="btn" id="diff-10" onclick="setDifficulty(10, 20)">Moyen</button>
+            <button class="btn" id="diff-12" onclick="setDifficulty(12, 35)">Grand</button>
+        </div>
+        <div style="display:flex; gap:10px">
+            <button id="modeBtn" class="btn" onclick="toggleMode()">Mode : Creuser</button>
+            <button class="btn" style="background:var(--warm)" onclick="initGame()">Reset</button>
+        </div>
+        <div id="status">Mines : 10</div>
+    </div>
+    <div id="grid" class="grid"></div>
+
+    <script>
+        let size = 8, minesCount = 10, board = [], flagMode = false, gameOver = false, revealedCount = 0;
+
+        function setDifficulty(s, m) {
+            size = s; minesCount = m;
+            document.querySelectorAll('.difficulty-btns .btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('diff-'+s).classList.add('active');
+            initGame();
+        }
+
+        function initGame() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = ''; board = []; revealedCount = 0; gameOver = false;
+            grid.style.gridTemplateColumns = `repeat(${size}, 32px)`;
+            document.getElementById('status').innerText = "Mines : " + minesCount;
+            
+            for(let r=0; r<size; r++) {
+                board[r] = [];
+                for(let c=0; c<size; c++) {
+                    const el = document.createElement('div');
+                    el.className = 'cell';
+                    el.onclick = () => clickCell(r, c);
+                    grid.appendChild(el);
+                    board[r][c] = { mine: false, revealed: false, flag: false, count: 0, el };
+                }
+            }
+            let placed = 0;
+            while(placed < minesCount) {
+                let r = Math.floor(Math.random()*size), c = Math.floor(Math.random()*size);
+                if(!board[r][c].mine) { board[r][c].mine = true; placed++; }
+            }
+        }
+
+        function clickCell(r, c) {
+            if(gameOver) return;
+            let cell = board[r][c];
+            if(flagMode) {
+                if(cell.revealed) return;
+                cell.flag = !cell.flag;
+                cell.el.innerText = cell.flag ? '🚩' : '';
+                cell.el.classList.toggle('flag');
+                return;
+            }
+            if(cell.mine) { revealMines(); document.getElementById('status').innerText = "BOOM !"; gameOver = true; }
+            else reveal(r, c);
+        }
+
+        function reveal(r, c) {
+            if(r<0||r>=size||c<0||c>=size||board[r][c].revealed||board[r][c].flag) return;
+            let cell = board[r][c];
+            cell.revealed = true; cell.el.classList.add('revealed');
+            revealedCount++;
+            let mines = 0;
+            for(let i=-1; i<=1; i++) for(let j=-1; j<=1; j++) {
+                let nr=r+i, nc=c+j;
+                if(nr>=0 && nr<size && nc>=0 && nc<size && board[nr][nc].mine) mines++;
+            }
+            if(mines>0) cell.el.innerText = mines;
+            else for(let i=-1; i<=1; i++) for(let j=-1; j<=1; j++) reveal(r+i, c+j);
+            if(revealedCount === size*size - minesCount) { document.getElementById('status').innerText = "Gagné ! 🎉"; gameOver = true; }
+        }
+
+        function revealMines() {
+            board.flat().forEach(c => { if(c.mine) { c.el.classList.add('mine'); c.el.innerText = '💣'; } });
+        }
+
+        function toggleMode() {
+            flagMode = !flagMode;
+            document.getElementById('modeBtn').innerText = flagMode ? "Mode : Drapeau" : "Mode : Creuser";
+            document.getElementById('modeBtn').classList.toggle('active');
+        }
+
+        setDifficulty(8, 10);
+    </script>
+</body>
+</html>
