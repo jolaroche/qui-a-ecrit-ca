@@ -3,112 +3,248 @@
 <head>
     <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Démineur Jojo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@900&family=DM+Sans:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; --sage: #6B8F71; }
-        body { font-family: sans-serif; background: var(--cream); text-align: center; color: var(--ink); margin: 0; padding: 10px; }
-        .grid { display: inline-grid; gap: 4px; background: var(--ink); padding: 8px; border-radius: 12px; margin-top: 15px; }
-        .cell { width: 32px; height: 32px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: white; font-size: 1rem; }
-        .cell.revealed { background: var(--cream); color: var(--ink); }
-        .cell.mine { background: var(--warm); }
-        .cell.flag { background: var(--sage); }
-        .controls { margin: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .difficulty-btns { display: flex; gap: 5px; }
-        .btn { background: var(--ink); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; }
-        .btn.active { background: var(--sage); }
+        :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; --warm-dark: #b84a28; --sage: #6B8F71; --card: #FDFAF4; --border: rgba(26,18,9,0.15); }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'DM Sans', sans-serif; background: var(--cream); text-align: center; 
+            color: var(--ink); margin: 0; padding: 10px; min-height: 100vh;
+        }
+
+        body::before { 
+            content: ''; position: fixed; inset: 0; 
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231A1209' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); 
+            pointer-events: none; z-index: 0; 
+        }
+        
+        .container { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+        
+        h2 { font-family: 'Fraunces', serif; font-weight: 900; margin: 10px 0; font-size: 1.8rem; }
+
+        .game-header {
+            background: var(--ink); color: white; border-radius: 15px;
+            padding: 15px; margin-bottom: 15px; display: flex; 
+            justify-content: space-around; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-box { display: flex; flex-direction: column; }
+        .stat-label { font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 900; }
+
+        .controls { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-bottom: 20px; }
+        
+        select {
+            padding: 8px 12px; border-radius: 10px; border: 2px solid var(--ink);
+            font-family: 'DM Sans'; font-weight: 700; background: var(--card);
+            box-shadow: 3px 3px 0 var(--ink); outline: none;
+        }
+
+        .btn-group { display: flex; gap: 10px; }
+        
+        .btn { 
+            background: var(--card); color: var(--ink); border: 2px solid var(--ink); 
+            padding: 10px 18px; border-radius: 12px; font-weight: 700; cursor: pointer;
+            box-shadow: 3px 3px 0 var(--ink); transition: 0.1s;
+        }
+        .btn.active { background: var(--sage); color: white; border-color: #4a634e; }
+        .btn-primary { background: var(--warm); color: white; box-shadow: 3px 3px 0 var(--warm-dark); border-color: var(--warm-dark); }
+        .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+
+        /* Grille adaptable */
+        .grid-wrapper { overflow-x: auto; padding: 10px; margin-bottom: 20px; }
+        .grid { 
+            display: inline-grid; gap: 4px; background: var(--ink); padding: 10px; 
+            border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .cell { 
+            width: 32px; height: 32px; background: #2a1f14; border-radius: 4px; 
+            display: flex; align-items: center; justify-content: center; font-weight: 900; 
+            cursor: pointer; color: white; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.4);
+            font-size: 1rem; user-select: none;
+        }
+        .cell.revealed { background: var(--cream); color: var(--ink); box-shadow: none; border: 0.5px solid var(--border); }
+        .cell.mine { background: var(--warm); color: white; }
+        .cell.flag { background: var(--sage); color: white; }
+        
+        /* Couleurs pour les chiffres */
+        .n-1 { color: #4A8FB5; } .n-2 { color: var(--sage); } .n-3 { color: var(--warm); } .n-4 { color: #9B88C2; }
     </style>
 </head>
 <body>
-    <h2>💣 Démineur</h2>
-    <div class="controls">
-        <div class="difficulty-btns">
-            <button class="btn" id="diff-8" onclick="setDifficulty(8, 10)">Petit</button>
-            <button class="btn" id="diff-10" onclick="setDifficulty(10, 20)">Moyen</button>
-            <button class="btn" id="diff-12" onclick="setDifficulty(12, 35)">Grand</button>
+    <div class="container">
+        <h2>💣 Démineur Jojo</h2>
+
+        <div class="game-header">
+            <div class="stat-box">
+                <span class="stat-label">Mines Restantes</span>
+                <span id="mine-count" class="stat-value">10</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Statut</span>
+                <span id="game-status" class="stat-value">😊</span>
+            </div>
         </div>
-        <div style="display:flex; gap:10px">
-            <button id="modeBtn" class="btn" onclick="toggleMode()">Mode : Creuser</button>
-            <button class="btn" style="background:var(--warm)" onclick="initGame()">Reset</button>
+
+        <div class="controls">
+            <div>
+                <label style="font-weight:700; font-size:0.8rem">DIFFICULTÉ : </label>
+                <select id="difficulty" onchange="initGame()">
+                    <option value="easy">Facile (8x8)</option>
+                    <option value="medium">Moyen (12x12)</option>
+                    <option value="hard">Expert (16x16)</option>
+                </select>
+            </div>
+            <div class="btn-group">
+                <button class="btn active" id="revealBtn" onclick="setMode('reveal')">🔍 Révéler</button>
+                <button class="btn" id="flagBtn" onclick="setMode('flag')">🚩 Drapeau</button>
+            </div>
+            <button class="btn btn-primary" onclick="initGame()">🔄 Nouvelle Partie</button>
         </div>
-        <div id="status">Mines : 10</div>
+
+        <div class="grid-wrapper">
+            <div id="grid" class="grid"></div>
+        </div>
     </div>
-    <div id="grid" class="grid"></div>
 
     <script>
-        let size = 8, minesCount = 10, board = [], flagMode = false, gameOver = false, revealedCount = 0;
+        let size, minesTotal, minesRemaining;
+        let board = [], mode = 'reveal', gameOver = false, revealedCount = 0;
 
-        function setDifficulty(s, m) {
-            size = s; minesCount = m;
-            document.querySelectorAll('.difficulty-btns .btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('diff-'+s).classList.add('active');
-            initGame();
+        const config = {
+            easy: { size: 8, mines: 10 },
+            medium: { size: 12, mines: 25 },
+            hard: { size: 16, mines: 40 }
+        };
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('revealBtn').classList.toggle('active', mode === 'reveal');
+            document.getElementById('flagBtn').classList.toggle('active', mode === 'flag');
         }
 
         function initGame() {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = ''; board = []; revealedCount = 0; gameOver = false;
-            grid.style.gridTemplateColumns = `repeat(${size}, 32px)`;
-            document.getElementById('status').innerText = "Mines : " + minesCount;
+            const diff = document.getElementById('difficulty').value;
+            size = config[diff].size;
+            minesTotal = config[diff].mines;
+            minesRemaining = minesTotal;
             
+            const grid = document.getElementById('grid');
+            grid.style.gridTemplateColumns = `repeat(${size}, 32px)`;
+            grid.innerHTML = '';
+            
+            board = []; gameOver = false; revealedCount = 0;
+            updateUI();
+
+            // Création du tableau
             for(let r=0; r<size; r++) {
                 board[r] = [];
                 for(let c=0; c<size; c++) {
                     const el = document.createElement('div');
                     el.className = 'cell';
-                    el.onclick = () => clickCell(r, c);
+                    el.onclick = () => handleClick(r, c);
+                    // Clic droit pour drapeau sur PC
+                    el.oncontextmenu = (e) => { e.preventDefault(); toggleFlag(r,c); };
                     grid.appendChild(el);
-                    board[r][c] = { mine: false, revealed: false, flag: false, count: 0, el };
+                    board[r][c] = { mine: false, revealed: false, flag: false, el };
                 }
             }
+
+            // Placement des mines
             let placed = 0;
-            while(placed < minesCount) {
-                let r = Math.floor(Math.random()*size), c = Math.floor(Math.random()*size);
+            while(placed < minesTotal) {
+                let r = Math.floor(Math.random()*size);
+                let c = Math.floor(Math.random()*size);
                 if(!board[r][c].mine) { board[r][c].mine = true; placed++; }
             }
         }
 
-        function clickCell(r, c) {
+        function updateUI() {
+            document.getElementById('mine-count').innerText = minesRemaining;
+            document.getElementById('game-status').innerText = gameOver ? (revealedCount === size*size - minesTotal ? "🏆" : "💥") : "😊";
+        }
+
+        function handleClick(r, c) {
             if(gameOver) return;
+            if(mode === 'flag') { toggleFlag(r, c); return; }
+            
             let cell = board[r][c];
-            if(flagMode) {
-                if(cell.revealed) return;
-                cell.flag = !cell.flag;
-                cell.el.innerText = cell.flag ? '🚩' : '';
-                cell.el.classList.toggle('flag');
-                return;
+            if(cell.revealed || cell.flag) return;
+
+            if(cell.mine) {
+                endGame(false);
+            } else {
+                reveal(r, c);
             }
-            if(cell.mine) { revealMines(); document.getElementById('status').innerText = "BOOM !"; gameOver = true; }
-            else reveal(r, c);
+        }
+
+        function toggleFlag(r, c) {
+            if(gameOver || board[r][c].revealed) return;
+            
+            const cell = board[r][c];
+            cell.flag = !cell.flag;
+            
+            if(cell.flag) {
+                cell.el.classList.add('flag');
+                cell.el.innerText = '🚩';
+                minesRemaining--;
+            } else {
+                cell.el.classList.remove('flag');
+                cell.el.innerText = '';
+                minesRemaining++;
+            }
+            updateUI();
         }
 
         function reveal(r, c) {
-            if(r<0||r>=size||c<0||c>=size||board[r][c].revealed||board[r][c].flag) return;
+            if(r<0 || r>=size || c<0 || c>=size || board[r][c].revealed || board[r][c].flag) return;
+            
             let cell = board[r][c];
-            cell.revealed = true; cell.el.classList.add('revealed');
+            cell.revealed = true;
+            cell.el.classList.add('revealed');
             revealedCount++;
-            let mines = 0;
-            for(let i=-1; i<=1; i++) for(let j=-1; j<=1; j++) {
-                let nr=r+i, nc=c+j;
-                if(nr>=0 && nr<size && nc>=0 && nc<size && board[nr][nc].mine) mines++;
+
+            let minesNear = 0;
+            for(let i=-1; i<=1; i++) {
+                for(let j=-1; j<=1; j++) {
+                    let nr=r+i, nc=c+j;
+                    if(nr>=0 && nr<size && nc>=0 && nc<size && board[nr][nc].mine) minesNear++;
+                }
             }
-            if(mines>0) cell.el.innerText = mines;
-            else for(let i=-1; i<=1; i++) for(let j=-1; j<=1; j++) reveal(r+i, c+j);
-            if(revealedCount === size*size - minesCount) { document.getElementById('status').innerText = "Gagné ! 🎉"; gameOver = true; }
+
+            if(minesNear > 0) {
+                cell.el.innerText = minesNear;
+                cell.el.classList.add(`n-${minesNear}`);
+            } else {
+                // Propagation si case vide
+                for(let i=-1; i<=1; i++) {
+                    for(let j=-1; j<=1; j++) reveal(r+i, c+j);
+                }
+            }
+
+            if(revealedCount === size*size - minesTotal) endGame(true);
         }
 
-        function revealMines() {
-            board.flat().forEach(c => { if(c.mine) { c.el.classList.add('mine'); c.el.innerText = '💣'; } });
+        function endGame(win) {
+            gameOver = true;
+            board.flat().forEach(c => {
+                if(c.mine) {
+                    c.el.classList.add('mine');
+                    c.el.innerText = '💣';
+                }
+            });
+            updateUI();
+            if(win) alert("Félicitations ! Grille nettoyée ! 🎉");
         }
 
-        function toggleMode() {
-            flagMode = !flagMode;
-            document.getElementById('modeBtn').innerText = flagMode ? "Mode : Drapeau" : "Mode : Creuser";
-            document.getElementById('modeBtn').classList.toggle('active');
-        }
-
-        setDifficulty(8, 10);
+        // Lancement initial
+        initGame();
     </script>
 </body>
 </html>
