@@ -314,7 +314,7 @@ textarea { min-height: 90px; }
             <div><strong>① Un thème est tiré</strong> — ex: "Ton film préféré ?"</div>
             <div><strong>② Chacun répond</strong> — en secret, téléphone passé à tour de rôle.</div>
             <div><strong>③ On devine</strong> — chaque joueur reçoit une réponse anonyme.</div>
-            <div><strong>④ Révélation</strong> — bonne réponse = <span style="color:var(--sage)">+1</span> pour le devineur, <span style="color:var(--warm)">−1</span> pour la personne trouvée.</div>
+            <div><strong>④ Révélation</strong> — bonne réponse = <span style="color:var(--sage)">+6/+4/+2 pts</span> selon le nombre de devineurs, <span style="color:var(--warm)">−1</span> pour la personne trouvée.</div>
           </div>
           <button class="btn btn-ghost w-full mt-3" onclick="document.getElementById('howto').style.display='none'">Fermer ×</button>
         </div>
@@ -450,7 +450,10 @@ textarea { min-height: 90px; }
     </div>
     <p style="opacity:0.45; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; margin-bottom:14px;">Le thème de ce tour</p>
     <div class="theme-reveal pop" id="theme-card">
-      <span class="theme-emoji" id="theme-emoji">🎬</span>
+      <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:8px;">
+        <span class="theme-emoji" id="theme-emoji">🎬</span>
+        <span id="theme-mode-badge" style="font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; padding:3px 10px; border-radius:20px; border:1.5px solid rgba(245,240,232,0.4); color:rgba(245,240,232,0.8);"></span>
+      </div>
       <div class="theme-text" id="theme-text">…</div>
     </div>
     <div class="card mt-3" style="text-align:center;">
@@ -486,9 +489,12 @@ textarea { min-height: 90px; }
       </div>
       <div class="progress-bar"><div class="progress-fill" id="answer-progress-bar" style="width:25%"></div></div>
     </div>
-    <div class="theme-reveal" style="padding:18px 16px; margin-bottom:18px;">
-      <span id="answer-emoji" style="font-size:1.8rem; display:block; margin-bottom:6px;"></span>
-      <div class="theme-text" id="answer-theme" style="font-size:0.95rem;"></div>
+    <div class="theme-reveal" style="padding:18px 16px; margin-bottom:18px;" id="answer-theme-card">
+      <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:5px;">
+        <span id="answer-emoji" style="font-size:1.5rem; display:block;"></span>
+        <span id="answer-mode-badge" style="font-size:0.62rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:2px 8px; border-radius:20px; border:1.5px solid rgba(245,240,232,0.4); color:rgba(245,240,232,0.75);"></span>
+      </div>
+      <div class="theme-text" id="answer-theme" style="font-size:1rem;"></div>
     </div>
     <div class="input-wrap">
       <textarea id="answer-input" placeholder="Ta réponse honnête…" rows="3"></textarea>
@@ -523,9 +529,12 @@ textarea { min-height: 90px; }
       </div>
       <div class="progress-bar"><div class="progress-fill" id="guess-progress-bar" style="width:25%"></div></div>
     </div>
-    <div class="theme-reveal" style="padding:14px 16px; margin-bottom:18px;">
-      <span style="font-size:1.1rem;" id="reveal-emoji"></span>
-      <div style="font-size:0.9rem; font-family:'Fraunces',serif; color:var(--cream); margin-top:4px;" id="reveal-theme"></div>
+    <div class="theme-reveal" style="padding:14px 16px; margin-bottom:18px;" id="guess-theme-reveal-card">
+      <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:5px;">
+        <span style="font-size:1.3rem;" id="guess-emoji"></span>
+        <span id="guess-mode-badge" style="font-size:0.62rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:2px 8px; border-radius:20px; border:1.5px solid rgba(245,240,232,0.4); color:rgba(245,240,232,0.75);"></span>
+      </div>
+      <div style="font-size:1rem; font-family:'Fraunces',serif; font-weight:700; color:var(--cream); line-height:1.3;" id="guess-theme-text"></div>
     </div>
     <div style="background:var(--card-bg); border:2px solid var(--ink); border-radius:18px; box-shadow:4px 4px 0 var(--ink); padding:18px; width:100%;">
       <div class="section-label">La réponse mystère</div>
@@ -545,9 +554,12 @@ textarea { min-height: 90px; }
       <div class="step-pill">🎉 Révélation</div>
       <div class="badge">Tour <span id="reveal-round">1</span></div>
     </div>
-    <div class="theme-reveal" style="padding:14px 16px; margin-bottom:18px;">
-      <span style="font-size:1.1rem;" id="reveal-emoji"></span>
-      <div style="font-size:0.9rem; font-family:'Fraunces',serif; color:var(--cream); margin-top:4px;" id="reveal-theme"></div>
+    <div class="theme-reveal" style="padding:14px 16px; margin-bottom:18px;" id="reveal-theme-card">
+      <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:5px;">
+        <span style="font-size:1.3rem;" id="reveal-emoji"></span>
+        <span id="reveal-mode-badge" style="font-size:0.62rem; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding:2px 8px; border-radius:20px; border:1.5px solid rgba(245,240,232,0.4); color:rgba(245,240,232,0.75);"></span>
+      </div>
+      <div style="font-size:1rem; font-family:'Fraunces',serif; font-weight:700; color:var(--cream); line-height:1.3;" id="reveal-theme"></div>
     </div>
     <div id="reveal-list" style="width:100%;"></div>
     <div style="margin-top:auto; padding-top:22px; width:100%; display:flex; flex-direction:column; gap:10px;">
@@ -597,6 +609,22 @@ textarea { min-height: 90px; }
   </div>
 </div>
 
+<!-- ============================
+     HISTORY MODAL
+============================ -->
+<div id="modal-history" class="modal-overlay hidden" onclick="closeHistoryModalOnBg(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+      <div id="modal-history-avatar" style="width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; border:2px solid; flex-shrink:0;"></div>
+      <h3 id="modal-history-title">Historique</h3>
+    </div>
+    <div id="modal-history-list" style="display:flex; flex-direction:column; gap:9px;"></div>
+    <div id="modal-history-empty" class="hidden" style="text-align:center; opacity:0.4; padding:24px 0; font-size:0.85rem;">Aucune réponse encore enregistrée.</div>
+    <button class="btn btn-ghost w-full mt-3" onclick="closeHistoryModal()">Fermer ×</button>
+  </div>
+</div>
+
 <script>
 // ==============================================
 //  CONSTANTS
@@ -615,106 +643,106 @@ const CATEGORIES = [
 ];
 
 const BASE_THEMES = [
-  { id:'t001', cat:'culture', emoji:'🎬', text:'Quel est ton film préféré ?' },
-  { id:'t002', cat:'culture', emoji:'🎵', text:'Quelle chanson tu écouterais en boucle une semaine ?' },
-  { id:'t003', cat:'culture', emoji:'📺', text:'Quelle série tu conseillerais à tout le monde ?' },
-  { id:'t004', cat:'culture', emoji:'📚', text:'Quel livre a changé ta façon de voir les choses ?' },
-  { id:'t005', cat:'culture', emoji:'🎤', text:'Quelle chanson tu choisirais pour ton karaoké ?' },
-  { id:'t006', cat:'culture', emoji:'🎮', text:'Quel jeu vidéo / jeu de société te définit le mieux ?' },
-  { id:'t007', cat:'culture', emoji:'🎭', text:'Si ta vie était un film, quel genre serait-il ?' },
-  { id:'t008', cat:'culture', emoji:'🎸', text:'Si tu étais une décennie musicale, tu serais laquelle ?' },
-  { id:'t009', cat:'culture', emoji:'🎹', text:'Quelle musique tu ne peux pas écouter sans ressentir quelque chose ?' },
-  { id:'t010', cat:'culture', emoji:'🎨', text:'Si tu devais choisir un art à maîtriser, lequel ?' },
-  { id:'t011', cat:'perso', emoji:'🪞', text:'Si tu te décrivais en 3 mots, lesquels ?' },
-  { id:'t012', cat:'perso', emoji:'😬', text:'Quelle est ta plus grande peur irrationnelle ?' },
-  { id:'t013', cat:'perso', emoji:'🌟', text:'Quelle est ta plus grande fierté ?' },
-  { id:'t014', cat:'perso', emoji:'😅', text:'Quel est ton plus grand talent caché ?' },
-  { id:'t015', cat:'perso', emoji:'💡', text:"Quelle idée tu n'as jamais eu le courage de réaliser ?" },
-  { id:'t016', cat:'perso', emoji:'💪', text:'Quelle chose dont tu es secrètement très fier·e ?' },
-  { id:'t017', cat:'perso', emoji:'🎯', text:'Quelle habitude tu voudrais vraiment arrêter ?' },
-  { id:'t018', cat:'perso', emoji:'🧠', text:'À quelle heure de la journée es-tu le plus productif·ve ?' },
-  { id:'t019', cat:'perso', emoji:'🌙', text:'Décris ton humeur en ce moment avec un seul mot.' },
-  { id:'t020', cat:'perso', emoji:'🤭', text:'Quelle est ta pensée honteuse que tu n\'avoues jamais ?' },
-  { id:'t021', cat:'perso', emoji:'🔐', text:'Quel est ton secret le plus inoffensif ?' },
-  { id:'t022', cat:'perso', emoji:'🦋', text:'Quelle est la plus grande transformation que tu as vécue ?' },
-  { id:'t023', cat:'perso', emoji:'🧬', text:'Quelle chose tiens-tu de tes parents, en bien ?' },
-  { id:'t024', cat:'perso', emoji:'💭', text:'À quoi tu penses quand tu ne penses à rien ?' },
-  { id:'t025', cat:'perso', emoji:'🌿', text:'Tu es plutôt introverti·e ou extraverti·e — dans quelle proportion ?' },
-  { id:'t026', cat:'relations', emoji:'❤️', text:'Quel est ton love language ?' },
-  { id:'t027', cat:'relations', emoji:'🚩', text:'Quel est pour toi le plus gros red flag chez quelqu\'un ?' },
-  { id:'t028', cat:'relations', emoji:'🤝', text:'Quelle valeur est non-négociable pour toi en amitié ?' },
-  { id:'t029', cat:'relations', emoji:'💔', text:'Quelle expérience passée t\'a le plus appris ?' },
-  { id:'t030', cat:'relations', emoji:'💌', text:'Quelle est la chose la plus douce qu\'on t\'ait jamais dite ?' },
-  { id:'t031', cat:'relations', emoji:'🤗', text:'Qui est la personne qui t\'a le plus influencé·e ?' },
-  { id:'t032', cat:'relations', emoji:'🌹', text:'Comment tu définirais l\'amour en une phrase ?' },
-  { id:'t033', cat:'relations', emoji:'🧲', text:"Qu'est-ce qui attire les gens vers toi en général ?" },
-  { id:'t034', cat:'relations', emoji:'💬', text:'Quelle chose tu dis souvent mais ne fais jamais ?' },
-  { id:'t035', cat:'relations', emoji:'🎁', text:"Qu'est-ce qui, selon toi, ferait de toi un·e meilleur·e ami·e ?" },
-  { id:'t036', cat:'lifestyle', emoji:'🏖️', text:'Vacances idéales : plage, montagne ou ville ?' },
-  { id:'t037', cat:'lifestyle', emoji:'🌍', text:'Dans quel pays tu voudrais vivre si tu devais quitter la France ?' },
-  { id:'t038', cat:'lifestyle', emoji:'🍕', text:'Quelle est ta nourriture réconfortante ultime ?' },
-  { id:'t039', cat:'lifestyle', emoji:'☕', text:'Café, thé, ou rien — quelle est ta boisson du matin ?' },
-  { id:'t040', cat:'lifestyle', emoji:'🛌', text:'Quelle est ta position pour dormir ?' },
-  { id:'t041', cat:'lifestyle', emoji:'📱', text:'Quelle appli tu ne pourrais pas désinstaller ?' },
-  { id:'t042', cat:'lifestyle', emoji:'🚗', text:'Tu préfères conduire ou être passager·e ?' },
-  { id:'t043', cat:'lifestyle', emoji:'🍫', text:'Chocolat noir, au lait, ou blanc — et c\'est définitif ?' },
-  { id:'t044', cat:'lifestyle', emoji:'🏡', text:'Comment tu imagines ta maison idéale ?' },
-  { id:'t045', cat:'lifestyle', emoji:'🌙', text:'Tu es plutôt couche-tard ou lève-tôt ?' },
-  { id:'t046', cat:'lifestyle', emoji:'🍷', text:'Soirée idéale : solo, duo ou groupe ?' },
-  { id:'t047', cat:'lifestyle', emoji:'🌿', text:'Tu es plutôt nature ou béton — et pourquoi ?' },
-  { id:'t048', cat:'lifestyle', emoji:'😴', text:'Quel est ton rituel du soir ?' },
-  { id:'t049', cat:'lifestyle', emoji:'🌮', text:'Quel plat tu cuisinerais pour impressionner quelqu\'un ?' },
-  { id:'t050', cat:'lifestyle', emoji:'🧩', text:'Comment tu gères le stress, honnêtement ?' },
-  { id:'t051', cat:'fun', emoji:'🦸', text:'Quel super-pouvoir tu choisirais sans hésiter ?' },
-  { id:'t052', cat:'fun', emoji:'🤓', text:'Sur quoi tu es imbattable en quiz ?' },
-  { id:'t053', cat:'fun', emoji:'🐾', text:'Tu es plutôt chien ou chat — et pourquoi ?' },
-  { id:'t054', cat:'fun', emoji:'🐝', text:'Quel animal te représente le mieux ?' },
-  { id:'t055', cat:'fun', emoji:'🌈', text:'Quelle époque du passé tu aurais voulu vivre ?' },
-  { id:'t056', cat:'fun', emoji:'🛸', text:'Si tu devais habiter une autre planète, laquelle ?' },
-  { id:'t057', cat:'fun', emoji:'🎪', text:'Quel talent tu aurais voulu avoir ?' },
-  { id:'t058', cat:'fun', emoji:'🏋️', text:'Quel est ton rapport avec ton corps en ce moment ?' },
-  { id:'t059', cat:'fun', emoji:'🎡', text:'Quel est ton souvenir d\'enfance préféré ?' },
-  { id:'t060', cat:'fun', emoji:'🧸', text:'Tu as encore un objet de ton enfance que tu gardes ?' },
-  { id:'t061', cat:'fun', emoji:'🍦', text:'Salé ou sucré — et tu ne peux pas dire les deux ?' },
-  { id:'t062', cat:'fun', emoji:'🦊', text:'Si tu étais un animal, quel serait ton instinct naturel ?' },
-  { id:'t063', cat:'fun', emoji:'🤔', text:'Quelle est la question que tu te poses souvent la nuit ?' },
-  { id:'t064', cat:'fun', emoji:'🎃', text:'Quelle erreur t\'a le plus appris dans ta vie ?' },
-  { id:'t065', cat:'fun', emoji:'🌵', text:'Tu résistes combien de temps sans ton téléphone ?' },
-  { id:'t066', cat:'philo', emoji:'🔮', text:'Tu crois en quoi — karma, destin, hasard pur ?' },
-  { id:'t067', cat:'philo', emoji:'🌅', text:"Qu'est-ce qui donne du sens à ta vie ?" },
-  { id:'t068', cat:'philo', emoji:'🔭', text:'Comment tu imagines ta vie dans 10 ans ?' },
-  { id:'t069', cat:'philo', emoji:'🌠', text:'Si tu pouvais revenir 5 ans en arrière, tu changerais quoi ?' },
-  { id:'t070', cat:'philo', emoji:'📝', text:'Si tu pouvais écrire une lettre à ton futur toi, tu lui dirais quoi ?' },
-  { id:'t071', cat:'philo', emoji:'🌍', text:'Quelle injustice dans le monde te révolte le plus ?' },
-  { id:'t072', cat:'philo', emoji:'🧭', text:'Tu vis plutôt dans le passé, le présent ou le futur ?' },
-  { id:'t073', cat:'philo', emoji:'🌊', text:'Tu flottes ou tu coules face à l\'incertitude ?' },
-  { id:'t074', cat:'philo', emoji:'🎑', text:'Quel est le moment où tu t\'es senti·e le plus libre ?' },
-  { id:'t075', cat:'philo', emoji:'🌻', text:"Qu'est-ce qui te manquerait le plus sans internet ?" },
-  { id:'t076', cat:'philo', emoji:'🔑', text:'Quelle est la clé de ton bonheur selon toi ?' },
-  { id:'t077', cat:'philo', emoji:'🤲', text:'De quoi tu te sens le plus reconnaissant·e en ce moment ?' },
-  { id:'t078', cat:'philo', emoji:'🎗️', text:'Quelle cause ou sujet te tient vraiment à cœur ?' },
-  { id:'t079', cat:'philo', emoji:'💎', text:'Quel est ton objet le plus précieux sentimentalement ?' },
-  { id:'t080', cat:'philo', emoji:'🏆', text:'Quelle est ta plus grande victoire personnelle ?' },
-  { id:'t081', cat:'fun', emoji:'💸', text:'Si tu gagnais 1 million €, quelle est la première chose que tu ferais ?' },
-  { id:'t082', cat:'lifestyle', emoji:'🧳', text:'Si tu devais partir demain, quelle destination tu choisirais ?' },
-  { id:'t083', cat:'perso', emoji:'🎲', text:'Tu es plutôt risque ou sécurité dans ta vie ?' },
-  { id:'t084', cat:'relations', emoji:'🍻', text:'Dans un groupe, quel est ton rôle instinctif ?' },
-  { id:'t085', cat:'perso', emoji:'👻', text:'Quel est ton côté sombre que peu de gens connaissent ?' },
-  { id:'t086', cat:'perso', emoji:'🌺', text:"Qu'est-ce qui te met instantanément de bonne humeur ?" },
-  { id:'t087', cat:'perso', emoji:'🎠', text:'Quel est ton moment de pure joie cette semaine ?' },
-  { id:'t088', cat:'lifestyle', emoji:'🌃', text:'Paris ou New York pour vivre ?' },
-  { id:'t089', cat:'relations', emoji:'🤭', text:'Quelle est l\'opinion impopulaire absolue que tu assumes ?' },
-  { id:'t090', cat:'philo', emoji:'📷', text:'Si tu prenais une photo de ta vie actuelle, ça ressemblerait à quoi ?' },
-  { id:'t091', cat:'fun', emoji:'🏄', text:'Quelle aventure tu veux vivre avant tes 80 ans ?' },
-  { id:'t092', cat:'philo', emoji:'🌺', text:'Quelle activité te ressource totalement ?' },
-  { id:'t093', cat:'perso', emoji:'🎬', text:'Quel personnage de fiction tu penses être dans ta vie ?' },
-  { id:'t094', cat:'perso', emoji:'⚡', text:'Quelle chose t\'énerve le plus dans la vie quotidienne ?' },
-  { id:'t095', cat:'relations', emoji:'🌙', text:'Quel est le dernier truc que tu as fait pour quelqu\'un sans rien attendre ?' },
-  { id:'t096', cat:'lifestyle', emoji:'🥂', text:'Quel serait ton dîner de rêve idéal ?' },
-  { id:'t097', cat:'culture', emoji:'🎵', text:'Quelle est la musique qui définit ton adolescence ?' },
-  { id:'t098', cat:'perso', emoji:'💭', text:'Si tu pouvais changer une chose en toi, laquelle ?' },
-  { id:'t099', cat:'fun', emoji:'🧁', text:'Si tu étais un dessert, tu serais lequel ?' },
-  { id:'t100', cat:'philo', emoji:'🌍', text:"Si tu pouvais vivre n'importe quelle autre vie que la tienne, laquelle ?" },
+  { id:'t001', cat:'culture', emoji:'🎬', text:'Quel est ton film préféré ?', mode:'serious' },
+  { id:'t002', cat:'culture', emoji:'🎵', text:'Quelle chanson tu écouterais en boucle une semaine ?', mode:'serious' },
+  { id:'t003', cat:'culture', emoji:'📺', text:'Quelle série tu conseillerais à tout le monde ?', mode:'serious' },
+  { id:'t004', cat:'culture', emoji:'📚', text:'Quel livre a changé ta façon de voir les choses ?', mode:'serious' },
+  { id:'t005', cat:'culture', emoji:'🎤', text:'Quelle chanson tu choisirais pour ton karaoké ?', mode:'serious' },
+  { id:'t006', cat:'culture', emoji:'🎮', text:'Quel jeu vidéo / jeu de société te définit le mieux ?', mode:'serious' },
+  { id:'t007', cat:'culture', emoji:'🎭', text:'Si ta vie était un film, quel genre serait-il ?', mode:'serious' },
+  { id:'t008', cat:'culture', emoji:'🎸', text:'Si tu étais une décennie musicale, tu serais laquelle ?', mode:'joke' },
+  { id:'t009', cat:'culture', emoji:'🎹', text:'Quelle musique tu ne peux pas écouter sans ressentir quelque chose ?', mode:'serious' },
+  { id:'t010', cat:'culture', emoji:'🎨', text:'Si tu devais choisir un art à maîtriser, lequel ?', mode:'serious' },
+  { id:'t011', cat:'perso', emoji:'🪞', text:'Si tu te décrivais en 3 mots, lesquels ?', mode:'serious' },
+  { id:'t012', cat:'perso', emoji:'😬', text:'Quelle est ta plus grande peur irrationnelle ?', mode:'serious' },
+  { id:'t013', cat:'perso', emoji:'🌟', text:'Quelle est ta plus grande fierté ?', mode:'serious' },
+  { id:'t014', cat:'perso', emoji:'😅', text:'Quel est ton plus grand talent caché ?', mode:'serious' },
+  { id:'t015', cat:'perso', emoji:'💡', text:"Quelle idée tu n'as jamais eu le courage de réaliser ?", mode:'serious' },
+  { id:'t016', cat:'perso', emoji:'💪', text:'Quelle chose dont tu es secrètement très fier·e ?', mode:'serious' },
+  { id:'t017', cat:'perso', emoji:'🎯', text:'Quelle habitude tu voudrais vraiment arrêter ?', mode:'serious' },
+  { id:'t018', cat:'perso', emoji:'🧠', text:'À quelle heure de la journée es-tu le plus productif·ve ?', mode:'joke' },
+  { id:'t019', cat:'perso', emoji:'🌙', text:'Décris ton humeur en ce moment avec un seul mot.', mode:'serious' },
+  { id:'t020', cat:'perso', emoji:'🤭', text:'Quelle est ta pensée honteuse que tu n\'avoues jamais ?', mode:'serious' },
+  { id:'t021', cat:'perso', emoji:'🔐', text:'Quel est ton secret le plus inoffensif ?', mode:'serious' },
+  { id:'t022', cat:'perso', emoji:'🦋', text:'Quelle est la plus grande transformation que tu as vécue ?', mode:'serious' },
+  { id:'t023', cat:'perso', emoji:'🧬', text:'Quelle chose tiens-tu de tes parents, en bien ?', mode:'serious' },
+  { id:'t024', cat:'perso', emoji:'💭', text:'À quoi tu penses quand tu ne penses à rien ?', mode:'serious' },
+  { id:'t025', cat:'perso', emoji:'🌿', text:'Tu es plutôt introverti·e ou extraverti·e — dans quelle proportion ?', mode:'joke' },
+  { id:'t026', cat:'relations', emoji:'❤️', text:'Quel est ton love language ?', mode:'serious' },
+  { id:'t027', cat:'relations', emoji:'🚩', text:'Quel est pour toi le plus gros red flag chez quelqu\'un ?', mode:'serious' },
+  { id:'t028', cat:'relations', emoji:'🤝', text:'Quelle valeur est non-négociable pour toi en amitié ?', mode:'serious' },
+  { id:'t029', cat:'relations', emoji:'💔', text:'Quelle expérience passée t\'a le plus appris ?', mode:'serious' },
+  { id:'t030', cat:'relations', emoji:'💌', text:'Quelle est la chose la plus douce qu\'on t\'ait jamais dite ?', mode:'serious' },
+  { id:'t031', cat:'relations', emoji:'🤗', text:'Qui est la personne qui t\'a le plus influencé·e ?', mode:'serious' },
+  { id:'t032', cat:'relations', emoji:'🌹', text:'Comment tu définirais l\'amour en une phrase ?', mode:'serious' },
+  { id:'t033', cat:'relations', emoji:'🧲', text:"Qu'est-ce qui attire les gens vers toi en général ?", mode:'serious' },
+  { id:'t034', cat:'relations', emoji:'💬', text:'Quelle chose tu dis souvent mais ne fais jamais ?', mode:'serious' },
+  { id:'t035', cat:'relations', emoji:'🎁', text:"Qu'est-ce qui, selon toi, ferait de toi un·e meilleur·e ami·e ?", mode:'serious' },
+  { id:'t036', cat:'lifestyle', emoji:'🏖️', text:'Vacances idéales : plage, montagne ou ville ?', mode:'joke' },
+  { id:'t037', cat:'lifestyle', emoji:'🌍', text:'Dans quel pays tu voudrais vivre si tu devais quitter la France ?', mode:'serious' },
+  { id:'t038', cat:'lifestyle', emoji:'🍕', text:'Quelle est ta nourriture réconfortante ultime ?', mode:'serious' },
+  { id:'t039', cat:'lifestyle', emoji:'☕', text:'Café, thé, ou rien — quelle est ta boisson du matin ?', mode:'joke' },
+  { id:'t040', cat:'lifestyle', emoji:'🛌', text:'Quelle est ta position pour dormir ?', mode:'joke' },
+  { id:'t041', cat:'lifestyle', emoji:'📱', text:'Quelle appli tu ne pourrais pas désinstaller ?', mode:'serious' },
+  { id:'t042', cat:'lifestyle', emoji:'🚗', text:'Tu préfères conduire ou être passager·e ?', mode:'joke' },
+  { id:'t043', cat:'lifestyle', emoji:'🍫', text:'Chocolat noir, au lait, ou blanc — et c\'est définitif ?', mode:'joke' },
+  { id:'t044', cat:'lifestyle', emoji:'🏡', text:'Comment tu imagines ta maison idéale ?', mode:'serious' },
+  { id:'t045', cat:'lifestyle', emoji:'🌙', text:'Tu es plutôt couche-tard ou lève-tôt ?', mode:'joke' },
+  { id:'t046', cat:'lifestyle', emoji:'🍷', text:'Soirée idéale : solo, duo ou groupe ?', mode:'joke' },
+  { id:'t047', cat:'lifestyle', emoji:'🌿', text:'Tu es plutôt nature ou béton — et pourquoi ?', mode:'joke' },
+  { id:'t048', cat:'lifestyle', emoji:'😴', text:'Quel est ton rituel du soir ?', mode:'serious' },
+  { id:'t049', cat:'lifestyle', emoji:'🌮', text:'Quel plat tu cuisinerais pour impressionner quelqu\'un ?', mode:'serious' },
+  { id:'t050', cat:'lifestyle', emoji:'🧩', text:'Comment tu gères le stress, honnêtement ?', mode:'serious' },
+  { id:'t051', cat:'fun', emoji:'🦸', text:'Quel super-pouvoir tu choisirais sans hésiter ?', mode:'joke' },
+  { id:'t052', cat:'fun', emoji:'🤓', text:'Sur quoi tu es imbattable en quiz ?', mode:'serious' },
+  { id:'t053', cat:'fun', emoji:'🐾', text:'Tu es plutôt chien ou chat — et pourquoi ?', mode:'joke' },
+  { id:'t054', cat:'fun', emoji:'🐝', text:'Quel animal te représente le mieux ?', mode:'joke' },
+  { id:'t055', cat:'fun', emoji:'🌈', text:'Quelle époque du passé tu aurais voulu vivre ?', mode:'serious' },
+  { id:'t056', cat:'fun', emoji:'🛸', text:'Si tu devais habiter une autre planète, laquelle ?', mode:'joke' },
+  { id:'t057', cat:'fun', emoji:'🎪', text:'Quel talent tu aurais voulu avoir ?', mode:'serious' },
+  { id:'t058', cat:'fun', emoji:'🏋️', text:'Quel est ton rapport avec ton corps en ce moment ?', mode:'serious' },
+  { id:'t059', cat:'fun', emoji:'🎡', text:'Quel est ton souvenir d\'enfance préféré ?', mode:'serious' },
+  { id:'t060', cat:'fun', emoji:'🧸', text:'Tu as encore un objet de ton enfance que tu gardes ?', mode:'joke' },
+  { id:'t061', cat:'fun', emoji:'🍦', text:'Salé ou sucré — et tu ne peux pas dire les deux ?', mode:'joke' },
+  { id:'t062', cat:'fun', emoji:'🦊', text:'Si tu étais un animal, quel serait ton instinct naturel ?', mode:'joke' },
+  { id:'t063', cat:'fun', emoji:'🤔', text:'Quelle est la question que tu te poses souvent la nuit ?', mode:'serious' },
+  { id:'t064', cat:'fun', emoji:'🎃', text:'Quelle erreur t\'a le plus appris dans ta vie ?', mode:'serious' },
+  { id:'t065', cat:'fun', emoji:'🌵', text:'Tu résistes combien de temps sans ton téléphone ?', mode:'joke' },
+  { id:'t066', cat:'philo', emoji:'🔮', text:'Tu crois en quoi — karma, destin, hasard pur ?', mode:'joke' },
+  { id:'t067', cat:'philo', emoji:'🌅', text:"Qu'est-ce qui donne du sens à ta vie ?", mode:'serious' },
+  { id:'t068', cat:'philo', emoji:'🔭', text:'Comment tu imagines ta vie dans 10 ans ?', mode:'serious' },
+  { id:'t069', cat:'philo', emoji:'🌠', text:'Si tu pouvais revenir 5 ans en arrière, tu changerais quoi ?', mode:'serious' },
+  { id:'t070', cat:'philo', emoji:'📝', text:'Si tu pouvais écrire une lettre à ton futur toi, tu lui dirais quoi ?', mode:'serious' },
+  { id:'t071', cat:'philo', emoji:'🌍', text:'Quelle injustice dans le monde te révolte le plus ?', mode:'serious' },
+  { id:'t072', cat:'philo', emoji:'🧭', text:'Tu vis plutôt dans le passé, le présent ou le futur ?', mode:'joke' },
+  { id:'t073', cat:'philo', emoji:'🌊', text:'Tu flottes ou tu coules face à l\'incertitude ?', mode:'joke' },
+  { id:'t074', cat:'philo', emoji:'🎑', text:'Quel est le moment où tu t\'es senti·e le plus libre ?', mode:'serious' },
+  { id:'t075', cat:'philo', emoji:'🌻', text:"Qu'est-ce qui te manquerait le plus sans internet ?", mode:'serious' },
+  { id:'t076', cat:'philo', emoji:'🔑', text:'Quelle est la clé de ton bonheur selon toi ?', mode:'serious' },
+  { id:'t077', cat:'philo', emoji:'🤲', text:'De quoi tu te sens le plus reconnaissant·e en ce moment ?', mode:'serious' },
+  { id:'t078', cat:'philo', emoji:'🎗️', text:'Quelle cause ou sujet te tient vraiment à cœur ?', mode:'serious' },
+  { id:'t079', cat:'philo', emoji:'💎', text:'Quel est ton objet le plus précieux sentimentalement ?', mode:'serious' },
+  { id:'t080', cat:'philo', emoji:'🏆', text:'Quelle est ta plus grande victoire personnelle ?', mode:'serious' },
+  { id:'t081', cat:'fun', emoji:'💸', text:'Si tu gagnais 1 million €, quelle est la première chose que tu ferais ?', mode:'serious' },
+  { id:'t082', cat:'lifestyle', emoji:'🧳', text:'Si tu devais partir demain, quelle destination tu choisirais ?', mode:'serious' },
+  { id:'t083', cat:'perso', emoji:'🎲', text:'Tu es plutôt risque ou sécurité dans ta vie ?', mode:'joke' },
+  { id:'t084', cat:'relations', emoji:'🍻', text:'Dans un groupe, quel est ton rôle instinctif ?', mode:'serious' },
+  { id:'t085', cat:'perso', emoji:'👻', text:'Quel est ton côté sombre que peu de gens connaissent ?', mode:'serious' },
+  { id:'t086', cat:'perso', emoji:'🌺', text:"Qu'est-ce qui te met instantanément de bonne humeur ?", mode:'serious' },
+  { id:'t087', cat:'perso', emoji:'🎠', text:'Quel est ton moment de pure joie cette semaine ?', mode:'serious' },
+  { id:'t088', cat:'lifestyle', emoji:'🌃', text:'Paris ou New York pour vivre ?', mode:'joke' },
+  { id:'t089', cat:'relations', emoji:'🤭', text:'Quelle est l\'opinion impopulaire absolue que tu assumes ?', mode:'serious' },
+  { id:'t090', cat:'philo', emoji:'📷', text:'Si tu prenais une photo de ta vie actuelle, ça ressemblerait à quoi ?', mode:'serious' },
+  { id:'t091', cat:'fun', emoji:'🏄', text:'Quelle aventure tu veux vivre avant tes 80 ans ?', mode:'serious' },
+  { id:'t092', cat:'philo', emoji:'🌺', text:'Quelle activité te ressource totalement ?', mode:'serious' },
+  { id:'t093', cat:'perso', emoji:'🎬', text:'Quel personnage de fiction tu penses être dans ta vie ?', mode:'joke' },
+  { id:'t094', cat:'perso', emoji:'⚡', text:'Quelle chose t\'énerve le plus dans la vie quotidienne ?', mode:'serious' },
+  { id:'t095', cat:'relations', emoji:'🌙', text:'Quel est le dernier truc que tu as fait pour quelqu\'un sans rien attendre ?', mode:'serious' },
+  { id:'t096', cat:'lifestyle', emoji:'🥂', text:'Quel serait ton dîner de rêve idéal ?', mode:'serious' },
+  { id:'t097', cat:'culture', emoji:'🎵', text:'Quelle est la musique qui définit ton adolescence ?', mode:'serious' },
+  { id:'t098', cat:'perso', emoji:'💭', text:'Si tu pouvais changer une chose en toi, laquelle ?', mode:'serious' },
+  { id:'t099', cat:'fun', emoji:'🧁', text:'Si tu étais un dessert, tu serais lequel ?', mode:'joke' },
+  { id:'t100', cat:'philo', emoji:'🌍', text:"Si tu pouvais vivre n'importe quelle autre vie que la tienne, laquelle ?", mode:'serious' },
 ];
 
 // ==============================================
@@ -886,13 +914,19 @@ function renderThemes() {
     const isOn = !appState.disabledThemes.has(theme.id);
     const isCustom = !!appState.customThemes.find(c => c.id === theme.id);
     const cat = CATEGORIES.find(c => c.id === theme.cat);
+    const mode = theme.mode || 'serious';
+    const modeLabel = mode === 'joke' ? '😄 Blague' : '🧠 Sérieux';
+    const modeColor = mode === 'joke' ? '#D4A843' : '#6B8F71';
     const div = document.createElement('div');
     div.className = `theme-item ${!isOn ? 'disabled' : ''}`;
     div.innerHTML = `
       <span class="theme-item-emoji">${theme.emoji}</span>
       <div style="flex:1;">
         <div class="theme-item-text">${theme.text}</div>
-        ${cat ? `<div style="font-size:0.68rem; font-weight:600; color:${cat.color}; margin-top:2px; opacity:0.8;">${cat.emoji} ${cat.label}</div>` : ''}
+        <div style="display:flex; align-items:center; gap:6px; margin-top:3px;">
+          ${cat ? `<span style="font-size:0.65rem; font-weight:600; color:${cat.color}; opacity:0.8;">${cat.emoji} ${cat.label}</span>` : ''}
+          <span style="font-size:0.62rem; font-weight:700; color:${modeColor}; background:${modeColor}18; padding:1px 6px; border-radius:8px; border:1px solid ${modeColor}40;">${modeLabel}</span>
+        </div>
       </div>
       ${isCustom ? `<button class="btn-icon-sm" style="background:var(--rose); color:white;" onclick="deleteCustomTheme('${theme.id}')">✕</button>` : ''}
       <button class="toggle-switch ${isOn ? 'on' : 'off'}" onclick="toggleTheme('${theme.id}')"></button>
@@ -983,15 +1017,17 @@ function renderProfiles() {
     el.className = 'profile-card';
     const wins = p.wins || 0;
     const played = p.gamesPlayed || 0;
+    const histCount = (p.answerHistory || []).length;
     el.innerHTML = `
       <div class="profile-avatar-big" style="background:${p.color}20; color:${p.color}; border-color:${p.color};">
         ${p.emoji}
       </div>
       <div class="profile-info">
         <div class="profile-name">${p.name}</div>
-        <div class="profile-stats">${played} partie${played!==1?'s':''} · ${wins} victoire${wins!==1?'s':''}</div>
+        <div class="profile-stats">${played} partie${played!==1?'s':''} · ${wins} victoire${wins!==1?'s':''} · ${histCount} réponse${histCount!==1?'s':''}</div>
       </div>
       <div style="display:flex; gap:6px;">
+        ${histCount > 0 ? `<button class="btn-icon-sm" style="background:rgba(155,136,194,0.15); color:var(--lavender);" onclick="openHistoryModal('${p.id}')">📖</button>` : ''}
         <button class="btn-icon-sm" style="background:rgba(26,18,9,0.08);" onclick="openProfileModal('${p.id}')">✏️</button>
         <button class="btn-icon-sm" style="background:rgba(201,107,138,0.15); color:var(--rose);" onclick="deleteProfile('${p.id}')">🗑</button>
       </div>
@@ -1231,6 +1267,19 @@ function startRound() {
   document.getElementById('theme-emoji').textContent = game.currentTheme.emoji;
   document.getElementById('theme-text').textContent = game.currentTheme.text;
 
+  const badge = document.getElementById('theme-mode-badge');
+  if ((game.currentTheme.mode || 'serious') === 'joke') {
+    badge.textContent = '😄 Mode blague';
+    badge.style.background = 'rgba(212,168,67,0.2)';
+    badge.style.borderColor = 'rgba(212,168,67,0.5)';
+    badge.style.color = '#D4A843';
+  } else {
+    badge.textContent = '🧠 Mode sérieux';
+    badge.style.background = 'rgba(107,143,113,0.2)';
+    badge.style.borderColor = 'rgba(107,143,113,0.5)';
+    badge.style.color = '#a8d4af';
+  }
+
   const card = document.getElementById('theme-card');
   card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
   gameGoTo('screen-theme');
@@ -1253,6 +1302,19 @@ function goToAnswer() {
   document.getElementById('answer-input').value = '';
   document.getElementById('answer-progress-text').textContent = `${current}/${total}`;
   document.getElementById('answer-progress-bar').style.width = `${(current/total)*100}%`;
+
+  // Mode badge on answer card
+  const answerCard = document.getElementById('answer-theme-card');
+  if (answerCard) {
+    const mode = game.currentTheme.mode || 'serious';
+    const modeBadge = document.getElementById('answer-mode-badge');
+    if (modeBadge) {
+      modeBadge.textContent = mode === 'joke' ? '😄 Blague' : '🧠 Sérieux';
+      modeBadge.style.color = mode === 'joke' ? '#D4A843' : '#a8d4af';
+      modeBadge.style.borderColor = mode === 'joke' ? 'rgba(212,168,67,0.5)' : 'rgba(107,143,113,0.5)';
+      modeBadge.style.background = mode === 'joke' ? 'rgba(212,168,67,0.2)' : 'rgba(107,143,113,0.2)';
+    }
+  }
   gameGoTo('screen-answer');
 }
 
@@ -1292,6 +1354,23 @@ function goToGuess() {
   document.getElementById('guess-progress-text').textContent = `${current}/${total}`;
   document.getElementById('guess-progress-bar').style.width = `${(current/total)*100}%`;
   document.getElementById('guess-answer-text').textContent = `"${answerText}"`;
+
+  // Fill theme display
+  const theme = game.currentTheme;
+  document.getElementById('guess-emoji').textContent = theme.emoji;
+  document.getElementById('guess-theme-text').textContent = theme.text;
+  const modeBadge = document.getElementById('guess-mode-badge');
+  if ((theme.mode || 'serious') === 'joke') {
+    modeBadge.textContent = '😄 Blague';
+    modeBadge.style.background = 'rgba(212,168,67,0.25)';
+    modeBadge.style.borderColor = 'rgba(212,168,67,0.6)';
+    modeBadge.style.color = '#D4A843';
+  } else {
+    modeBadge.textContent = '🧠 Sérieux';
+    modeBadge.style.background = 'rgba(107,143,113,0.2)';
+    modeBadge.style.borderColor = 'rgba(107,143,113,0.5)';
+    modeBadge.style.color = '#a8d4af';
+  }
 
   const container = document.getElementById('guess-player-options');
   container.innerHTML = '';
@@ -1345,18 +1424,76 @@ function submitGuess() {
 function computeScores() {
   const delta = {};
   game.players.forEach((_,i) => delta[i] = 0);
-  game.players.forEach((_,gIdx) => {
-    const aIdx = game.assignments[gIdx];
-    if (game.guesses[gIdx] === aIdx) { delta[gIdx]++; delta[aIdx]--; }
+
+  // For each author, count how many guessers got it right
+  game.players.forEach((_,aIdx) => {
+    const correctGuessers = [];
+    game.players.forEach((_,gIdx) => {
+      if (game.assignments[gIdx] === aIdx && game.guesses[gIdx] === aIdx) {
+        correctGuessers.push(gIdx);
+      }
+    });
+    if (correctGuessers.length === 0) return;
+
+    // Points for guessers depending on how many guessed correctly
+    let pts;
+    if (correctGuessers.length === 1) pts = 6;
+    else if (correctGuessers.length === 2) pts = 4;
+    else pts = 2;
+
+    correctGuessers.forEach(gIdx => { delta[gIdx] += pts; });
+    delta[aIdx] -= 1; // guessed person loses 1 point
   });
+
+  // Also handle wrong guesses: save info for display but no point change beyond the above
   game.players.forEach((name,idx) => { game.scores[name] += delta[idx]; });
+
+  // Save answer history to profiles
+  saveAnswerHistory();
+
   renderReveal(delta);
+}
+
+function saveAnswerHistory() {
+  const theme = game.currentTheme;
+  const updated = appState.profiles.map(p => {
+    if (!game.players.includes(p.name)) return p;
+    const playerIdx = game.players.indexOf(p.name);
+    const answer = game.answers[playerIdx];
+    if (!answer) return p;
+    if (!p.answerHistory) p.answerHistory = [];
+    p.answerHistory.unshift({
+      themeId: theme.id,
+      themeEmoji: theme.emoji,
+      themeText: theme.text,
+      themeMode: theme.mode || 'serious',
+      answer,
+      date: new Date().toISOString().split('T')[0],
+    });
+    // Keep only last 50
+    if (p.answerHistory.length > 50) p.answerHistory = p.answerHistory.slice(0, 50);
+    return p;
+  });
+  appState.profiles = updated;
+  saveStorage(STORAGE_KEYS.profiles, appState.profiles);
 }
 
 function renderReveal(delta) {
   document.getElementById('reveal-round').textContent = game.currentRound;
   document.getElementById('reveal-emoji').textContent = game.currentTheme.emoji;
   document.getElementById('reveal-theme').textContent = game.currentTheme.text;
+  const revealModeBadge = document.getElementById('reveal-mode-badge');
+  if ((game.currentTheme.mode || 'serious') === 'joke') {
+    revealModeBadge.textContent = '😄 Blague';
+    revealModeBadge.style.background = 'rgba(212,168,67,0.25)';
+    revealModeBadge.style.borderColor = 'rgba(212,168,67,0.6)';
+    revealModeBadge.style.color = '#D4A843';
+  } else {
+    revealModeBadge.textContent = '🧠 Sérieux';
+    revealModeBadge.style.background = 'rgba(107,143,113,0.2)';
+    revealModeBadge.style.borderColor = 'rgba(107,143,113,0.5)';
+    revealModeBadge.style.color = '#a8d4af';
+  }
 
   const list = document.getElementById('reveal-list');
   list.innerHTML = '';
@@ -1372,49 +1509,74 @@ function renderReveal(delta) {
       if (game.assignments[gIdx] === aIdx) guessersOfThis.push({ gIdx, right: game.guesses[gIdx] === aIdx });
     });
 
+    // Count correct guessers for this author (for point display)
+    const correctCount = guessersOfThis.filter(g => g.right).length;
+    const pointsPerGuesser = correctCount === 1 ? 6 : correctCount === 2 ? 4 : correctCount >= 3 ? 2 : 0;
+
     const guessTags = guessersOfThis.map(g => {
       const cls = g.right ? 'correct' : 'wrong';
       const icon = g.right ? '✓' : '✗';
-      return `<span class="guess-tag ${cls}">${icon} ${game.players[g.gIdx]}</span>`;
+      const ptsLabel = g.right ? `+${pointsPerGuesser}` : '';
+      return `<span class="guess-tag ${cls}">${icon} ${game.players[g.gIdx]}${ptsLabel ? ` <strong>${ptsLabel}</strong>` : ''}</span>`;
     }).join('');
 
     const d = delta[aIdx];
-    const dHtml = d > 0 ? `<span style="color:var(--sage)">+${d}</span>` : d < 0 ? `<span style="color:var(--warm)">${d}</span>` : `<span style="opacity:0.4">±0</span>`;
+    const dHtml = d > 0 ? `<span style="color:var(--sage); font-size:1rem;">+${d}</span>` : d < 0 ? `<span style="color:var(--warm); font-size:1rem;">${d}</span>` : `<span style="opacity:0.35; font-size:0.9rem;">±0</span>`;
+
+    // Build penalty note
+    const penaltyNote = correctCount > 0 ? `<span style="color:var(--warm); font-size:0.72rem; opacity:0.8;">−1 deviné·e</span>` : '';
 
     const item = document.createElement('div');
     item.className = 'reveal-item';
     item.innerHTML = `
       <div class="reveal-answer">"${answer}"</div>
       <div class="reveal-author">
-        <span style="font-size:1.05rem;">${emoji}</span>
-        <span style="color:${color}; font-size:0.9rem;">${authorName}</span>
-        <span style="margin-left:auto; font-family:'Fraunces',serif; font-size:1.05rem;">${dHtml}</span>
+        <div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem; background:${color}18; border:2px solid ${color}; flex-shrink:0;">${emoji}</div>
+        <span style="color:${color}; font-size:0.92rem; font-weight:700;">${authorName}</span>
+        <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+          ${penaltyNote}
+          <span style="font-family:'Fraunces',serif; font-weight:900;">${dHtml}</span>
+        </div>
       </div>
-      ${guessersOfThis.length > 0 ? `<div style="display:flex; flex-wrap:wrap; gap:5px;">${guessTags}</div>` : ''}
+      ${guessersOfThis.length > 0 ? `<div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:4px;">${guessTags}</div>` : ''}
     `;
     list.appendChild(item);
   });
 
-  // Current scores
+  // Current scores — clearer ranking card
   const scDiv = document.createElement('div');
-  scDiv.style.cssText = 'width:100%; margin-top:6px;';
-  scDiv.innerHTML = '<div class="section-label mb-2">Scores actuels</div>';
+  scDiv.style.cssText = 'width:100%; margin-top:10px;';
   const sorted = [...game.players].sort((a,b) => game.scores[b] - game.scores[a]);
+  const rankMedals = ['🥇','🥈','🥉'];
+  scDiv.innerHTML = `<div class="section-label mb-2">🏆 Classement</div>`;
+  const scCard = document.createElement('div');
+  scCard.style.cssText = 'background:var(--card-bg); border:2px solid var(--ink); border-radius:16px; box-shadow:3px 3px 0 var(--ink); overflow:hidden;';
   sorted.forEach((name, rank) => {
     const idx = game.players.indexOf(name);
     const profile = appState.profiles.find(p => p.name === name);
     const emoji = profile ? profile.emoji : PLAYER_EMOJIS[idx % PLAYER_EMOJIS.length];
+    const color = profile ? profile.color : PLAYER_COLORS[idx % PLAYER_COLORS.length];
     const sc = game.scores[name];
+    const thisRoundDelta = delta[idx];
+    const deltaStr = thisRoundDelta > 0 ? `+${thisRoundDelta}` : thisRoundDelta < 0 ? `${thisRoundDelta}` : '±0';
+    const deltaColor = thisRoundDelta > 0 ? 'var(--sage)' : thisRoundDelta < 0 ? 'var(--warm)' : 'rgba(26,18,9,0.3)';
     const el = document.createElement('div');
-    el.style.cssText = 'display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid rgba(26,18,9,0.07);';
+    el.style.cssText = `display:flex; align-items:center; gap:10px; padding:12px 14px; ${rank < sorted.length-1 ? 'border-bottom:1px solid rgba(26,18,9,0.08);' : ''} ${rank===0 ? 'background:rgba(212,168,67,0.08);' : ''}`;
     el.innerHTML = `
-      <span style="font-size:0.75rem; opacity:0.35; min-width:18px;">#${rank+1}</span>
-      <span style="font-size:1rem;">${emoji}</span>
-      <span style="font-weight:600; flex:1; font-size:0.9rem;">${name}</span>
-      <span style="font-family:'Fraunces',serif; font-weight:700; font-size:1.1rem; ${sc>0?'color:var(--sage)':sc<0?'color:var(--warm)':''};">${sc>0?'+':''}${sc}</span>
+      <span style="font-size:1.1rem; min-width:24px; text-align:center;">${rankMedals[rank] || `#${rank+1}`}</span>
+      <div style="width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem; background:${color}18; border:2px solid ${color}; flex-shrink:0;">${emoji}</div>
+      <span style="font-weight:600; flex:1; font-size:0.92rem;">${name}</span>
+      <span style="font-size:0.75rem; color:${deltaColor}; font-weight:700; min-width:30px; text-align:right;">${deltaStr}</span>
+      <span style="font-family:'Fraunces',serif; font-weight:900; font-size:1.25rem; min-width:38px; text-align:right; ${sc>0?'color:var(--sage)':sc<0?'color:var(--warm)':'opacity:0.5'};">${sc>0?'+':''}${sc}</span>
     `;
-    scDiv.appendChild(el);
+    scCard.appendChild(el);
   });
+  scDiv.appendChild(scCard);
+  // Legend
+  const legend = document.createElement('div');
+  legend.style.cssText = 'display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:0.7rem; opacity:0.5; justify-content:center;';
+  legend.innerHTML = `<span>Seul à deviner = +6</span><span>·</span><span>À 2 = +4</span><span>·</span><span>À 3+ = +2</span><span>·</span><span>Deviné·e = −1</span>`;
+  scDiv.appendChild(legend);
   list.appendChild(scDiv);
 
   const isLast = game.currentRound >= game.rounds;
@@ -1529,6 +1691,58 @@ function showToast(msg) {
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ==============================================
+//  HISTORY MODAL
+// ==============================================
+function openHistoryModal(profileId) {
+  const p = appState.profiles.find(pr => pr.id === profileId);
+  if (!p) return;
+  const modal = document.getElementById('modal-history');
+  const title = document.getElementById('modal-history-title');
+  const avatar = document.getElementById('modal-history-avatar');
+  const list = document.getElementById('modal-history-list');
+  const empty = document.getElementById('modal-history-empty');
+
+  title.textContent = `Réponses de ${p.name}`;
+  avatar.textContent = p.emoji;
+  avatar.style.background = p.color + '20';
+  avatar.style.color = p.color;
+  avatar.style.borderColor = p.color;
+
+  const history = p.answerHistory || [];
+  list.innerHTML = '';
+  if (history.length === 0) {
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    history.forEach(entry => {
+      const modeColor = entry.themeMode === 'joke' ? '#D4A843' : '#6B8F71';
+      const modeLabel = entry.themeMode === 'joke' ? '😄 Blague' : '🧠 Sérieux';
+      const el = document.createElement('div');
+      el.style.cssText = 'background:var(--card-bg); border:1.5px solid var(--border); border-radius:13px; padding:12px 14px;';
+      el.innerHTML = `
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+          <span style="font-size:1rem;">${entry.themeEmoji || '🎯'}</span>
+          <span style="font-size:0.78rem; font-weight:600; flex:1; opacity:0.75; line-height:1.3;">${entry.themeText}</span>
+          <span style="font-size:0.6rem; font-weight:700; color:${modeColor}; background:${modeColor}18; padding:1px 6px; border-radius:8px; border:1px solid ${modeColor}40; flex-shrink:0;">${modeLabel}</span>
+        </div>
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:0.95rem; color:var(--ink); padding-left:8px; border-left:3px solid ${p.color};">"${entry.answer}"</div>
+        ${entry.date ? `<div style="font-size:0.65rem; opacity:0.35; margin-top:6px; text-align:right;">${entry.date}</div>` : ''}
+      `;
+      list.appendChild(el);
+    });
+  }
+  modal.classList.remove('hidden');
+}
+
+function closeHistoryModal() {
+  document.getElementById('modal-history').classList.add('hidden');
+}
+
+function closeHistoryModalOnBg(e) {
+  if (e.target === document.getElementById('modal-history')) closeHistoryModal();
 }
 
 // ==============================================
