@@ -1,69 +1,72 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Ma Liste">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>To-Do List de Jojo</title>
+    <title>To-Do Jojo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; --sage: #6B8F71; }
-        body { font-family: sans-serif; background: var(--cream); padding: 20px; text-align: center; color: var(--ink); }
+        :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; --sage: #6B8F71; --card: #FDFAF4; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--cream); padding: 20px; color: var(--ink); margin: 0; min-height: 100vh; }
+        body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231A1209' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); pointer-events: none; z-index: 0; }
         
-        .todo-card { 
-            background: white; margin: 10px auto; padding: 15px; 
-            border-radius: 15px; display: flex; justify-content: space-between;
-            align-items: center; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            transition: all 0.2s;
+        .container { position: relative; z-index: 1; max-width: 450px; margin: 0 auto; }
+        h2 { font-family: 'Fraunces', serif; font-weight: 900; font-size: 2.2rem; margin-bottom: 25px; text-align: center; }
+        
+        .add-zone { display: flex; gap: 10px; margin-bottom: 30px; }
+        .input-main { 
+            flex: 1; padding: 14px; border-radius: 12px; border: 2px solid var(--ink); 
+            font-family: 'DM Sans'; font-size: 1rem; box-shadow: 3px 3px 0 var(--ink); outline: none;
         }
+        .btn-add { 
+            background: var(--warm); color: white; border: 2px solid var(--ink); 
+            border-radius: 12px; width: 50px; font-size: 1.5rem; font-weight: 900;
+            box-shadow: 3px 3px 0 var(--ink); cursor: pointer; transition: 0.1s;
+        }
+        .btn-add:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 
-        .todo-text { font-weight: 500; font-size: 1.1rem; text-align: left; flex: 1; margin-right: 10px; }
-        .todo-text.completed { text-decoration: line-through; color: #aaa; }
-
-        .btn-check { background: var(--sage); color: white; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .btn-delete { background: none; color: var(--warm); font-size: 1.2rem; padding: 10px; margin-left: 5px; }
-
-        button { border: none; cursor: pointer; font-weight: bold; }
+        .todo-card { 
+            background: var(--card); margin: 12px 0; padding: 16px; 
+            border-radius: 15px; display: flex; justify-content: space-between;
+            align-items: center; border: 2px solid var(--ink);
+            box-shadow: 4px 4px 0 var(--ink);
+        }
+        .todo-text { font-weight: 700; font-size: 1.05rem; flex: 1; cursor: pointer; }
+        .todo-text.completed { text-decoration: line-through; opacity: 0.4; }
         
-        .add-zone { margin-bottom: 30px; display: flex; gap: 10px; justify-content: center; max-width: 400px; margin-left: auto; margin-right: auto; }
-        .input-main { padding: 12px; border-radius: 10px; border: 1px solid #ddd; width: 75%; font-size: 1rem; }
-        .btn-add { background: var(--ink); color: white; border-radius: 10px; padding: 0 20px; font-size: 1.2rem; }
-
-        .back-btn { display: inline-block; margin-top: 30px; text-decoration: none; color: #888; }
-        
-        /* Animation pour le mode plein écran iOS */
-        @media  (display-mode: standalone) {
-            body { padding-top: 50px; }
+        .btn-check { 
+            background: var(--sage); color: white; border: 2px solid var(--ink); 
+            width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-weight: 900;
+        }
+        .btn-delete { 
+            color: var(--warm); font-weight: 900; background: none; border: none; 
+            margin-left: 15px; font-size: 1.4rem; cursor: pointer; 
         }
     </style>
 </head>
 <body>
-    <h2>📝 Ma Liste</h2>
-    
-    <div class="add-zone">
-        <input type="text" id="todoInput" class="input-main" placeholder="Nouvelle tâche...">
-        <button onclick="addTodo()" class="btn-add">+</button>
+    <div class="container">
+        <h2>Ma Liste</h2>
+        <div class="add-zone">
+            <input type="text" id="todoInput" class="input-main" placeholder="Ajouter une tâche...">
+            <button class="btn-add" onclick="addTodo()">+</button>
+        </div>
+        <div id="todoList"></div>
     </div>
 
-    <div id="todoList"></div>
-
-    <a href="index.html" class="back-btn">← Retour au menu</a>
-
     <script>
-        let todos = JSON.parse(localStorage.getItem('jojo_todos')) || [];
+        let todos = JSON.parse(localStorage.getItem('todos-jojo')) || [];
 
         function save() {
-            localStorage.setItem('jojo_todos', JSON.stringify(todos));
+            localStorage.setItem('todos-jojo', JSON.stringify(todos));
             render();
         }
 
         function addTodo() {
             const input = document.getElementById('todoInput');
-            if(input.value.trim()) {
+            if (input.value.trim() !== "") {
                 todos.push({ text: input.value, done: false });
-                input.value = '';
+                input.value = "";
                 save();
             }
         }
@@ -93,8 +96,7 @@
             `).join('');
         }
 
-        // Pour pouvoir valider avec la touche "Entrée"
-        document.getElementById('todoInput').addEventListener('keypress', function (e) {
+        document.getElementById('todoInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addTodo();
         });
 
