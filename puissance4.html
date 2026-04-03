@@ -5,7 +5,315 @@
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Puissance 4">
+    <meta name="apple-mobile-web-a<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Puissance 4 Jojo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #F5F0E8;
+            --ink: #1A1209;
+            --warm: #E8613A;
+            --warm-dark: #b84a28;
+            --sage: #6B8F71;
+            --gold: #D4A843;
+            --card: #FDFAF4;
+            --border: rgba(26,18,9,0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100dvh;
+            padding: 0 0 40px;
+            touch-action: manipulation;
+            overflow-x: hidden;
+        }
+
+        /* Motif de fond identique au Solitaire */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231A1209' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none; z-index: 0;
+        }
+
+        header {
+            background: var(--ink);
+            padding: 16px 20px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative; z-index: 1;
+        }
+
+        .header-title {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            color: var(--cream);
+            letter-spacing: -0.02em;
+        }
+
+        .header-title span { color: var(--warm); }
+
+        .header-back {
+            color: rgba(245,240,232,0.5);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center; gap: 5px;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            position: relative; z-index: 1;
+        }
+
+        /* Message d'état (style Solitaire) */
+        #status {
+            background: var(--ink);
+            color: var(--cream);
+            border-radius: 12px;
+            padding: 11px 16px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 16px;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        #status.turn-warm { border-bottom: 4px solid var(--warm); }
+        #status.turn-sage { border-bottom: 4px solid var(--sage); }
+        #status.win-warm { background: var(--warm); }
+        #status.win-sage { background: var(--sage); }
+
+        /* Plateau de jeu */
+        .board-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .board {
+            display: inline-grid;
+            grid-template-columns: repeat(7, 44px);
+            grid-template-rows: repeat(6, 44px);
+            gap: 6px;
+            background: var(--ink);
+            padding: 12px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(26,18,9,0.25), 4px 4px 0 rgba(0,0,0,0.15);
+        }
+
+        .cell {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: #2a1f14;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 2px 2px 6px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .token {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            display: none;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .player1 .token { 
+            display: block;
+            background: radial-gradient(circle at 35% 35%, #f4876a, var(--warm), #b84a28);
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.35), 2px 3px 8px rgba(232,97,58,0.4);
+            animation: drop 0.3s ease-out;
+        }
+
+        .player2 .token { 
+            display: block;
+            background: radial-gradient(circle at 35% 35%, #a8d4af, var(--sage), #3d6644);
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.3), 2px 3px 8px rgba(107,143,113,0.5);
+            animation: drop 0.3s ease-out;
+        }
+
+        @keyframes drop {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .winner .token {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px white, inset -2px -2px 5px rgba(0,0,0,0.3);
+            border: 2px solid white;
+        }
+
+        /* Bouton Rejouer */
+        .btn-primary {
+            width: 100%;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            background: var(--warm);
+            color: white;
+            box-shadow: 0 3px 0 var(--warm-dark), 0 5px 15px rgba(232,97,58,0.3);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--warm-dark); }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <span class="header-title">🔴 <span>Puissance 4</span></span>
+    <a href="index.html" class="header-back">← Menu</a>
+</header>
+
+<div class="container">
+    <div id="status" class="turn-warm">C'est au tour du Rouge</div>
+
+    <div class="board-wrap">
+        <div id="board" class="board"></div>
+    </div>
+
+    <button class="btn-primary" onclick="resetGame()">🔄 Recommencer la partie</button>
+</div>
+
+<script>
+    const ROWS = 6;
+    const COLS = 7;
+    let currentPlayer = 1; 
+    let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+    let gameActive = true;
+
+    const boardElement = document.getElementById('board');
+    const statusElement = document.getElementById('status');
+
+    function createBoard() {
+        boardElement.innerHTML = '';
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.id = `cell-${r}-${c}`;
+                cell.innerHTML = '<div class="token"></div>';
+                cell.onclick = () => handleMove(c);
+                boardElement.appendChild(cell);
+            }
+        }
+    }
+
+    function handleMove(col) {
+        if (!gameActive) return;
+
+        let row = -1;
+        for (let r = ROWS - 1; r >= 0; r--) {
+            if (board[r][col] === 0) {
+                row = r;
+                break;
+            }
+        }
+
+        if (row === -1) return;
+
+        board[row][col] = currentPlayer;
+        updateDisplay();
+
+        if (checkWin(row, col)) {
+            statusElement.textContent = `🏆 ${currentPlayer === 1 ? 'Rouge' : 'Vert'} a GAGNÉ !`;
+            statusElement.className = currentPlayer === 1 ? 'win-warm' : 'win-sage';
+            gameActive = false;
+            return;
+        }
+
+        if (board.flat().every(cell => cell !== 0)) {
+            statusElement.textContent = "Match nul !";
+            statusElement.className = '';
+            gameActive = false;
+            return;
+        }
+
+        currentPlayer = currentPlayer === 1 ? 2 : 1;
+        statusElement.textContent = `C'est au tour du ${currentPlayer === 1 ? 'Rouge' : 'Vert'}`;
+        statusElement.className = currentPlayer === 1 ? 'turn-warm' : 'turn-sage';
+    }
+
+    function updateDisplay() {
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const cell = document.getElementById(`cell-${r}-${c}`);
+                cell.classList.remove('player1', 'player2');
+                if (board[r][c] === 1) cell.classList.add('player1');
+                if (board[r][c] === 2) cell.classList.add('player2');
+            }
+        }
+    }
+
+    function checkWin(r, c) {
+        const directions = [
+            [[0, 1], [0, -1]], 
+            [[1, 0], [-1, 0]], 
+            [[1, 1], [-1, -1]], 
+            [[1, -1], [-1, 1]]  
+        ];
+
+        for (let dir of directions) {
+            let winningCells = [[r, c]];
+            dir.forEach(([dr, dc]) => {
+                let nr = r + dr;
+                let nc = c + dc;
+                while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc] === currentPlayer) {
+                    winningCells.push([nr, nc]);
+                    nr += dr;
+                    nc += dc;
+                }
+            });
+            
+            if (winningCells.length >= 4) {
+                winningCells.forEach(([wr, wc]) => {
+                    document.getElementById(`cell-${wr}-${wc}`).classList.add('winner');
+                });
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function resetGame() {
+        board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        currentPlayer = 1;
+        gameActive = true;
+        statusElement.textContent = "C'est au tour du Rouge";
+        statusElement.className = 'turn-warm';
+        createBoard(); // Reset visuel complet
+    }
+
+    createBoard();
+</script>
+</body>
+</html>pp-title" content="Puissance 4">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Puissance 4 de Jojo</title>
     <style>
