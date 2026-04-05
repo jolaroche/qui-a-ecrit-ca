@@ -6,60 +6,179 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Les apps de jojo">
+    
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪿</text></svg>">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Les applications de Jojo</title>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root { --cream: #F5F0E8; --ink: #1A1209; --warm: #E8613A; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); text-align: center; padding: 40px 20px; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); text-align: center; padding: 40px 20px 80px; }
         h1 { font-family: 'Fraunces', serif; font-size: 2.5rem; margin-bottom: 40px; }
-        h2 { font-family: 'Fraunces', serif; font-size: 1rem; margin-bottom: 20; }
-        .menu-grid { display: grid; gap: 20px; max-width: 400px; margin: 0 auto; }
-        .app-card { 
-            background: white; padding: 25px; border-radius: 20px; 
-            text-decoration: none; color: var(--ink); font-weight: 600;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s;
+        h2 { font-family: 'Fraunces', serif; font-size: 1rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .app-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: var(--ink);
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(26, 18, 9, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
             border: 2px solid transparent;
         }
+
+        /* Styles pour le masquage */
+        .app-card.hidden { display: none; }
+        
+        body.manage-mode .app-card.hidden { 
+            display: flex; 
+            opacity: 0.4; 
+            filter: grayscale(1); 
+            border: 2px dashed #ccc;
+        }
+
+        .hide-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0,0,0,0.05);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 10px;
+            z-index: 5;
+            transition: 0.2s;
+        }
+        .hide-btn:hover { background: var(--warm); color: white; }
+        body.manage-mode .hide-btn { background: var(--warm); color: white; transform: rotate(45deg); }
+
         .app-card:active { transform: scale(0.95); border-color: var(--warm); }
         .emoji { font-size: 2rem; display: block; margin-bottom: 10px; }
+
+        /* Bouton de gestion en bas */
+        #admin-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+        .manage-toggle {
+            background: var(--ink);
+            color: var(--cream);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: 0.3s;
+        }
+        .manage-toggle:hover { opacity: 1; }
     </style>
 </head>
 <body>
-    <span class="emoji">🦆</span><h1>Les applications de Jojo</h1>
+    <span class="emoji">🪿</span>
+    <h1>Les applications de Jojo</h1>
+    
     <h2>Outils :</h2>
     <div class="menu-grid">
-        <a href="compteurv2.html" class="app-card">
+        <a href="compteurv2.html" class="app-card" data-id="compteur">
+            <button class="hide-btn" onclick="toggleHide(event, 'compteur')">✕</button>
             <span class="emoji">🔢</span> Compteur de points
         </a>
-        <a href="todo.html" class="app-card">
+        <a href="todo.html" class="app-card" data-id="todo">
+            <button class="hide-btn" onclick="toggleHide(event, 'todo')">✕</button>
             <span class="emoji">📝</span> Ma To-Do List
         </a>
-        <a href="croquettes.html" class="app-card">
+        <a href="croquettes.html" class="app-card" data-id="croquettes">
+            <button class="hide-btn" onclick="toggleHide(event, 'croquettes')">✕</button>
             <span class="emoji">🐈</span> Croquettes
         </a>
-        
     </div>
+
     <h2>Jeux multis :</h2>
     <div class="menu-grid">
-        <a href="qui-a-dit.html" class="app-card">
+        <a href="qui-a-dit.html" class="app-card" data-id="qui-a-dit">
+            <button class="hide-btn" onclick="toggleHide(event, 'qui-a-dit')">✕</button>
             <span class="emoji">💬</span> Qui a écrit ça ?
         </a>
-        <a href="puissance4.html" class="app-card">
+        <a href="puissance4.html" class="app-card" data-id="puissance4">
+            <button class="hide-btn" onclick="toggleHide(event, 'puissance4')">✕</button>
             <span class="emoji">🔴</span> Puissance 4
         </a>
     </div>
+
     <h2>Jeux solos :</h2>
     <div class="menu-grid">
-        <a href="demineur.html" class="app-card solo">
+        <a href="demineur.html" class="app-card solo" data-id="demineur">
+            <button class="hide-btn" onclick="toggleHide(event, 'demineur')">✕</button>
             <span class="emoji">💣</span> Démineur
         </a>
-        <a href="solitaire_cartes.html" class="app-card solo">
-            <span class="emoji">🃏</span> Cartes
-        </a>
-        <a href="solitaire_bille.html" class="app-card solo">
-            <span class="emoji">♟️</span> Billes
-        </a>
     </div>
+
+    <div id="admin-panel">
+        <button class="manage-toggle" onclick="toggleManageMode()">⚙️ Gérer l'affichage</button>
+    </div>
+
+    <script>
+        let hiddenApps = JSON.parse(localStorage.getItem('jojo_hidden_apps')) || [];
+
+        function updateVisibility() {
+            document.querySelectorAll('.app-card').forEach(card => {
+                const id = card.getAttribute('data-id');
+                if (hiddenApps.includes(id)) {
+                    card.classList.add('hidden');
+                } else {
+                    card.classList.remove('hidden');
+                }
+            });
+        }
+
+        function toggleHide(event, id) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            if (hiddenApps.includes(id)) {
+                hiddenApps = hiddenApps.filter(item => item !== id);
+            } else {
+                hiddenApps.push(id);
+            }
+            
+            localStorage.setItem('jojo_hidden_apps', JSON.stringify(hiddenApps));
+            updateVisibility();
+        }
+
+        function toggleManageMode() {
+            document.body.classList.toggle('manage-mode');
+            const isManage = document.body.classList.contains('manage-mode');
+            document.querySelector('.manage-toggle').textContent = isManage ? "✅ Terminer" : "⚙️ Gérer l'affichage";
+        }
+
+        // Initialisation
+        updateVisibility();
+    </script>
 </body>
 </html>
