@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Compteur</title>
+<title>ScorePro</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,400;1,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -126,7 +126,26 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .ysec{font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cream-faint);padding:7px 16px 5px;background:var(--surface3)}
 .ysel{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--cream);font-family:'DM Mono',monospace;font-size:.72rem;padding:5px 8px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;min-width:90px;text-align:center}
 .ysel:focus{border-color:var(--gold-border)}.ysel.filled{color:var(--gold-light);border-color:var(--gold-border);background:var(--gold-dim)}
+.ysel.crossed{color:var(--red-light);border-color:rgba(192,57,43,.35);background:var(--red-dim)}
 .yams-footer{padding:12px 16px 16px}
+
+/* yams score breakdown */
+.yph-scores{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.yph-total{font-family:'Fraunces',serif;font-weight:900;font-size:1.5rem;color:var(--gold-light);letter-spacing:-0.03em;line-height:1}
+.yph-breakdown{display:flex;align-items:center;gap:5px}
+.yph-sub{font-size:0.62rem;color:var(--cream-faint);letter-spacing:0.02em}
+.yph-sub span{color:var(--cream-dim)}
+.bonus-pill{font-size:0.6rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px;transition:all .35s}
+.bonus-pill.inactive{background:var(--surface3);border:1px solid var(--border2);color:var(--cream-faint)}
+.bonus-pill.active{background:rgba(39,174,96,.2);border:1px solid rgba(39,174,96,.45);color:var(--green)}
+/* progress bar for upper section */
+.yph-progress-wrap{padding:0 16px 10px}
+.yph-progress-track{height:5px;background:var(--surface3);border-radius:3px;overflow:visible;position:relative}
+.yph-progress-fill{height:100%;border-radius:3px;background:var(--green);transition:width .4s cubic-bezier(.34,1.56,.64,1);max-width:100%}
+.yph-progress-fill.almost{background:var(--gold)}
+.yph-progress-fill.done{background:var(--green)}
+.yph-progress-marker{position:absolute;right:0;top:-3px;width:2px;height:11px;background:rgba(240,232,213,.25);border-radius:1px}
+.yph-prog-label{display:flex;justify-content:space-between;margin-top:4px;font-size:0.58rem;color:var(--cream-faint)}
 
 /* ---- END SCREEN ---- */
 #screen-end{padding-bottom:40px}
@@ -153,6 +172,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* ---- SETTINGS ---- */
 #screen-settings{padding-bottom:60px}
 .settings-body{padding:16px;display:flex;flex-direction:column;gap:22px}
+.sblock{}
 .sblock-title{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cream-faint);margin-bottom:8px}
 .prof-item{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 14px;margin-bottom:8px;transition:border-color .2s}
 .prof-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;border:1.5px solid var(--border2)}
@@ -232,8 +252,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- ===================== SCREEN: HOME ===================== -->
 <div id="screen-home" class="screen active">
   <div class="home-inner">
-    <div class="home-logo">Compteur<em>Jojo</em></div>
-    <div class="home-sub">compteur de points</div>
+    <div class="home-logo">Score<em>Pro</em></div>
+    <div class="home-sub">compteur de soirée jeu</div>
     <div class="home-q">De quel compteur as-tu besoin ?</div>
     <div class="mode-cards">
       <div class="mode-card mode-normal" onclick="startFlow('normal')">
@@ -345,7 +365,7 @@ const EMOJIS=['🐺','🦊','🐻','🦁','🐯','🦋','🦄','🐸','🦑','�
 const COLORS=['#E8613A','#6B8F71','#9B88C2','#C96B8A','#D4A843','#4A8FB5','#D47836','#5B8FA8','#7B6FA0','#C0392B','#27AE60','#E67E22'];
 const YAMS_GRID=[
   {sec:'Haut',rows:[{id:'1',n:'Les 1',val:1,type:'mult'},{id:'2',n:'Les 2',val:2,type:'mult'},{id:'3',n:'Les 3',val:3,type:'mult'},{id:'4',n:'Les 4',val:4,type:'mult'},{id:'5',n:'Les 5',val:5,type:'mult'},{id:'6',n:'Les 6',val:6,type:'mult'}]},
-  {sec:'Bas',rows:[{id:'brelan',n:'Brelan',type:'brelan',max:30},{id:'carre',n:'Carré',type:'carre',max:30},{id:'full',n:'Full',score:25,type:'fixed'},{id:'psuite',n:'P. Suite',score:30,type:'fixed'},{id:'gsuite',n:'G. Suite',score:40,type:'fixed'},{id:'yams',n:"Yam's",score:50,type:'fixed'},{id:'chance',n:'Chance',type:'range',max:30}]}
+  {sec:'Bas',rows:[{id:'brelan',n:'Brelan',type:'mult3',mult:3,count:6},{id:'carre',n:'Carré',type:'mult4',mult:4,count:6},{id:'full',n:'Full',score:25,type:'fixed'},{id:'psuite',n:'P. Suite',score:30,type:'fixed'},{id:'gsuite',n:'G. Suite',score:40,type:'fixed'},{id:'yams',n:"Yam's",score:50,type:'fixed'},{id:'chance',n:'Chance',type:'range',max:30}]}
 ];
 const ALL_YAMS_ROWS=YAMS_GRID.flatMap(s=>s.rows);
 
@@ -486,49 +506,112 @@ function renderYams(){
   getActive().forEach(p=>{
     const card=document.createElement('div');
     card.className='ypc';
+    // Compute initial breakdown
+    const {supScore,infScore,bonus}=calcYamsBreakdown(p);
+    const fillPct=Math.min(100,Math.round((supScore/63)*100));
+    const fillClass=supScore>=63?'done':supScore>=45?'almost':'';
     let tbl='<table class="yams-table">';
     YAMS_GRID.forEach(s=>{
       tbl+=`<tr><td colspan="2" class="ysec">${s.sec}</td></tr>`;
       s.rows.forEach(g=>{
-        const cur=(p.yams||{})[g.id]||0;
-        const f=cur>0;
+        const cur=(p.yams||{})[g.id];
+        const isCross=cur==='cross';
+        const hasVal=cur!==undefined&&cur!==null&&cur!==0&&cur!=='';
+        const selClass=isCross?'ysel crossed':hasVal?'ysel filled':'ysel';
+        const selVal=isCross?'cross':(cur||0);
         tbl+=`<tr><td>${g.n}</td><td>
-          <select class="ysel ${f?'filled':''}" onchange="this.classList.toggle('filled',this.value!='0');updateYams(${p.id},'${g.id}',this.value)">
+          <select class="${selClass}" onchange="this.className='ysel'+(this.value==='cross'?' crossed':this.value!=='0'?' filled':'');updateYams(${p.id},'${g.id}',this.value)">
             <option value="0">—</option>${genOpts(g,cur)}
           </select></td></tr>`;
       });
     });
     tbl+='</table>';
-    card.innerHTML=`<div class="yph"><span class="ypn"><span style="font-size:1.2rem">${p.emoji}</span>${p.name}</span><span class="yps" id="ys-${p.id}">${p.score}</span></div>${tbl}`;
+    card.innerHTML=`
+      <div class="yph">
+        <span class="ypn"><span style="font-size:1.2rem">${p.emoji}</span>${p.name}</span>
+        <div class="yph-scores">
+          <span class="yph-total" id="ys-${p.id}">${p.score}</span>
+          <div class="yph-breakdown">
+            <span class="yph-sub">H&nbsp;<span id="ysup-${p.id}">${supScore}</span> · B&nbsp;<span id="yinf-${p.id}">${infScore}</span></span>
+            <span class="bonus-pill ${bonus?'active':'inactive'}" id="ybonus-${p.id}">+35</span>
+          </div>
+        </div>
+      </div>
+      <div class="yph-progress-wrap">
+        <div class="yph-progress-track">
+          <div class="yph-progress-fill ${fillClass}" id="yprog-${p.id}" style="width:${fillPct}%"></div>
+          <div class="yph-progress-marker"></div>
+        </div>
+        <div class="yph-prog-label">
+          <span id="yprog-lbl-${p.id}">${supScore}/63 section haute</span>
+          <span>${bonus?'✓ Bonus accordé':'Bonus à 63'}</span>
+        </div>
+      </div>
+      ${tbl}
+    `;
     list.appendChild(card);
   });
+}
+
+function calcYamsBreakdown(p){
+  let supScore=0,infScore=0;
+  ALL_YAMS_ROWS.forEach(g=>{
+    const raw=(p.yams||{})[g.id];
+    const v=(raw==='cross'||raw===undefined||raw===null)?0:raw;
+    if(['1','2','3','4','5','6'].includes(g.id)) supScore+=v;
+    else infScore+=v;
+  });
+  const bonus=supScore>=63;
+  const total=supScore+infScore+(bonus?35:0);
+  return {supScore,infScore,bonus,total};
 }
 
 function updateYams(pId,rowId,val){
   const p=profiles.find(p=>p.id===pId);
   if(!p)return;
   if(!p.yams)p.yams={};
-  p.yams[rowId]=parseInt(val)||0;
-  let total=0,sup=0;
-  ALL_YAMS_ROWS.forEach(g=>{const v=p.yams[g.id]||0;total+=v;if(['1','2','3','4','5','6'].includes(g.id))sup+=v;});
-  if(sup>=63)total+=35;
+  // Store "cross" as string, numeric values as int
+  p.yams[rowId]=(val==='cross')?'cross':(parseInt(val)||0);
+
+  // Update select styling — "filled" = any committed value (cross counts too)
+  const sel=document.querySelector(`[onchange*="updateYams(${pId},'${rowId}'"]`);
+  if(sel) sel.className=`ysel ${(val!=='0'&&val!==0)?'filled':''}${val==='cross'?' crossed':''}`;
+
+  const {supScore,infScore,bonus,total}=calcYamsBreakdown(p);
   p.score=total;
-  const el=document.getElementById(`ys-${pId}`);
-  if(el)el.textContent=total;
+
+  const totalEl=document.getElementById(`ys-${pId}`);
+  if(totalEl)totalEl.textContent=total;
+  const supEl=document.getElementById(`ysup-${pId}`);
+  if(supEl)supEl.textContent=supScore;
+  const infEl=document.getElementById(`yinf-${pId}`);
+  if(infEl)infEl.textContent=infScore;
+  const bonusEl=document.getElementById(`ybonus-${pId}`);
+  if(bonusEl)bonusEl.className=`bonus-pill ${bonus?'active':'inactive'}`;
+  const fillPct=Math.min(100,Math.round((supScore/63)*100));
+  const fillClass=supScore>=63?'done':supScore>=45?'almost':'';
+  const progEl=document.getElementById(`yprog-${pId}`);
+  if(progEl){progEl.style.width=fillPct+'%';progEl.className=`yph-progress-fill ${fillClass}`;}
+  const lblEl=document.getElementById(`yprog-lbl-${pId}`);
+  if(lblEl)lblEl.textContent=`${supScore}/63 section haute`;
 }
 
 function genOpts(g,cur){
-  let h = `<option value="0">X (0pts)</option>`;
-  if(g.type==='mult')for(let i=1;i<=5;i++)h+=`<option value="${i*g.val}" ${cur===i*g.val?'selected':''}>${i}× → ${i*g.val}p</option>`;
-  else if(g.type==='fixed')h+=`<option value="${g.score}" ${cur===g.score?'selected':''}>${g.score} pts</option>`;
-  else if(g.type==='range')for(let i=1;i<=g.max;i++)h+=`<option value="${i}" ${cur===i?'selected':''}>${i} pts</option>`;
-  else if(g.type==='carre' || g.type==='brelan') {    
-    const mult = (g.type === 'carre') ? 4 : 3;
-    for(let i=1; i<=6; i++) {
-        let points = i * mult;
-        h += `<option value="${points}" ${cur == points ? 'selected' : ''}>D${i} (${points} pts)</option>`;
-    }
-}
+  // cur===null means "crossed" (0 pts deliberately), cur===0 means untouched
+  let h='';
+  // Cross option — always available for all rows
+  h+=`<option value="cross" ${cur==='cross'?'selected':''}>✕ Croix (0 pts)</option>`;
+  if(g.type==='mult'){
+    for(let i=1;i<=5;i++) h+=`<option value="${i*g.val}" ${cur===i*g.val?'selected':''}>${i}× → ${i*g.val}p</option>`;
+  } else if(g.type==='mult3'){
+    for(let i=1;i<=g.count;i++) h+=`<option value="${i*g.mult}" ${cur===i*g.mult?'selected':''}>${i*g.mult} pts</option>`;
+  } else if(g.type==='mult4'){
+    for(let i=1;i<=g.count;i++) h+=`<option value="${i*g.mult}" ${cur===i*g.mult?'selected':''}>${i*g.mult} pts</option>`;
+  } else if(g.type==='fixed'){
+    h+=`<option value="${g.score}" ${cur===g.score?'selected':''}>${g.score} pts</option>`;
+  } else if(g.type==='range'){
+    for(let i=1;i<=g.max;i++) h+=`<option value="${i}" ${cur===i?'selected':''}>${i} pts</option>`;
+  }
   return h;
 }
 
