@@ -3,14 +3,11 @@
 <head>
     <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/160/000000/goose-emoji.png?v=1">
-    <link rel="apple-touch-icon-precomposed" href="https://img.icons8.com/emoji/160/000000/goose-emoji.png?v=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-        
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Les apps de jojo">
     
-    
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪿</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23F5F0E8%22/><text y=%22.9em%22 font-size=%2280%22 x=%2210%22>🪿</text></svg>">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Les applications de Jojo</title>
@@ -46,9 +43,8 @@
             border: 2px solid transparent;
         }
 
-        /* Styles pour le masquage */
+        /* Système de masquage */
         .app-card.hidden { display: none; }
-        
         body.manage-mode .app-card.hidden { 
             display: flex; 
             opacity: 0.4; 
@@ -79,7 +75,6 @@
         .app-card:active { transform: scale(0.95); border-color: var(--warm); }
         .emoji { font-size: 2rem; display: block; margin-bottom: 10px; }
 
-        /* Bouton de gestion en bas */
         #admin-panel {
             position: fixed;
             bottom: 20px;
@@ -96,61 +91,43 @@
             font-size: 0.8rem;
             font-weight: bold;
             cursor: pointer;
-            opacity: 0.5;
-            transition: 0.3s;
+            opacity: 0.7;
         }
-        .manage-toggle:hover { opacity: 1; }
     </style>
 </head>
 <body>
     <span class="emoji">🪿</span>
     <h1>Les applications de Jojo</h1>
     
-    <h2>Outils :</h2>
+    <h2>Outils & Jeux :</h2>
     <div class="menu-grid">
         <a href="compteurv2.html" class="app-card" data-id="compteur">
             <button class="hide-btn" onclick="toggleHide(event, 'compteur')">✕</button>
-            <span class="emoji">🔢</span> Compteur de points
+            <span class="emoji">🔢</span> Compteur
         </a>
         <a href="todo.html" class="app-card" data-id="todo">
             <button class="hide-btn" onclick="toggleHide(event, 'todo')">✕</button>
-            <span class="emoji">📝</span> Ma To-Do List
+            <span class="emoji">📝</span> To-Do List
         </a>
         <a href="croquettes.html" class="app-card" data-id="croquettes">
             <button class="hide-btn" onclick="toggleHide(event, 'croquettes')">✕</button>
             <span class="emoji">🐈</span> Croquettes
         </a>
-    </div>
-
-    <h2>Jeux multis :</h2>
-    <div class="menu-grid">
+        <a href="https://cemantix.certitudes.org/" target="_blank" class="app-card" data-id="cemantix">
+            <button class="hide-btn" onclick="toggleHide(event, 'cemantix')">✕</button>
+            <span class="emoji">🌡️</span> Cémantix
+        </a>
         <a href="qui-a-dit.html" class="app-card" data-id="qui-a-dit">
             <button class="hide-btn" onclick="toggleHide(event, 'qui-a-dit')">✕</button>
-            <span class="emoji">💬</span> Qui a écrit ça ?
+            <span class="emoji">💬</span> Qui a dit ?
         </a>
         <a href="puissance4.html" class="app-card" data-id="puissance4">
             <button class="hide-btn" onclick="toggleHide(event, 'puissance4')">✕</button>
             <span class="emoji">🔴</span> Puissance 4
         </a>
-    </div>
-
-    <h2>Jeux solos :</h2>
-    <div class="menu-grid">
         <a href="demineur.html" class="app-card solo" data-id="demineur">
             <button class="hide-btn" onclick="toggleHide(event, 'demineur')">✕</button>
             <span class="emoji">💣</span> Démineur
-        </a>
-        <a href="solitaire_cartes.html" class="app-card solo">
-            <button class="hide-btn" onclick="toggleHide(event, 'demineur')">✕</button>
-            <span class="emoji">🃏</span> Cartes
-        </a>
-        <a href="solitaire_bille.html" class="app-card solo">
-            <button class="hide-btn" onclick="toggleHide(event, 'demineur')">✕</button>
-            <span class="emoji">♟️</span> Billes
-        </a>
-        <a href="https://cemantix.certitudes.org/" target="_blank" class="app-card" data-id="cemantix">
-            <button class="hide-btn" onclick="toggleHide(event, 'cemantix')">✕</button>
-            <span class="emoji">🌡️</span> Cémantix
         </a>
     </div>
 
@@ -175,13 +152,11 @@
         function toggleHide(event, id) {
             event.preventDefault();
             event.stopPropagation();
-            
             if (hiddenApps.includes(id)) {
                 hiddenApps = hiddenApps.filter(item => item !== id);
             } else {
                 hiddenApps.push(id);
             }
-            
             localStorage.setItem('jojo_hidden_apps', JSON.stringify(hiddenApps));
             updateVisibility();
         }
@@ -192,7 +167,6 @@
             document.querySelector('.manage-toggle').textContent = isManage ? "✅ Terminer" : "⚙️ Gérer l'affichage";
         }
 
-        // Initialisation
         updateVisibility();
     </script>
 </body>
