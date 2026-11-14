@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pomodoro Ambiance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Mise en page : un cadran central dont la couleur de fond change selon le mode,
+     et à côté, le lecteur d'ambiance sonore puis la liste de tâches. */
+  :root {
+    color-scheme: dark;
+    --bg: #172a45;
+    --accent: #86b6ff;
+    --fg: #eef2f8;
+    --muted: #a9b6c9;
+    --surface: rgba(255, 255, 255, .07);
+    --surface-2: rgba(255, 255, 255, .13);
+    --line: rgba(255, 255, 255, .15);
+    --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  [data-mode="short"] { --bg: #163630; --accent: #7fdcb6; }
+  [data-mode="long"]  { --bg: #2a2347; --accent: #bfa9ff; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.5 var(--font-body);
+    min-height: 100vh;
+    padding-block: 20px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    transition: background-color .5s ease;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .top h1 { font: 700 20px/1 var(--font-display); letter-spacing: .01em; margin: 0; }
+  .ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 8px 14px; transition: background .15s;
+  }
+  .ghost:hover { background: var(--surface-2); }
+  .ghost svg { width: 18px; height: 18px; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .side { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; min-width: 0; }
+  .card h2 { font: 600 13px/1 var(--font-body); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); margin: 0 0 16px; }
+
+  /* Minuteur */
+  .timer { text-align: center; padding-block: 26px 28px; }
+  .tabs { display: inline-flex; gap: 4px; background: rgba(0, 0, 0, .22); padding: 4px; border-radius: 12px; flex-wrap: wrap; justify-content: center; }
+  .tab { background: none; border: 0; padding: 8px 14px; border-radius: 9px; color: var(--muted); font-weight: 500; }
+  .tab[aria-selected="true"] { background: var(--surface-2); color: var(--fg); }
+  .dial { position: relative; width: clamp(230px, 56vw, 330px); aspect-ratio: 1; margin: 26px auto 22px; max-width: 100%; }
+  .dial svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .track { fill: none; stroke: rgba(255, 255, 255, .1); stroke-width: 5; }
+  .bar { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset .25s linear, stroke .5s; }
+  .readout { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #time { font: 600 clamp(52px, 13vw, 78px)/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  #label { margin-top: 8px; color: var(--muted); font-size: 14px; }
+  .controls { display: flex; align-items: center; justify-content: center; gap: 14px; }
+  .primary {
+    background: var(--fg); color: var(--bg); border: 0; border-radius: 14px;
+    min-width: 170px; padding: 15px 28px; font: 700 17px/1 var(--font-display); letter-spacing: .04em; text-transform: uppercase;
+    box-shadow: 0 5px 0 rgba(0, 0, 0, .28); transition: transform .08s, box-shadow .08s;
+  }
+  .primary:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0, 0, 0, .28); }
+  .round { width: 46px; height: 46px; display: grid; place-items: center; padding: 0; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); }
+  .round:hover { background: var(--surface-2); }
+  .round svg { width: 20px; height: 20px; }
+  #session { margin: 22px 0 0; color: var(--muted); font-size: 14px; }
+  .hint { margin: 8px 0 0; color: var(--muted); font-size: 12.5px; }
+
+  /* Ambiance */
+  .urlrow { display: flex; gap: 8px; }
+  .urlrow input { flex: 1; min-width: 0; background: rgba(0, 0, 0, .25); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .urlrow input::placeholder { color: rgba(255, 255, 255, .4); }
+  .btn { background: var(--accent); color: #0d1522; border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 600; white-space: nowrap; }
+  .btn:hover { filter: brightness(1.08); }
+  .msg { min-height: 20px; margin: 8px 0 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+  .msg.err { color: #ffb4a8; }
+  .video { margin-top: 12px; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+  .video iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .mrow { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  .mrow label { color: var(--muted); font-size: 13px; }
+  .mrow input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .chip { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; font-size: 12.5px; color: var(--muted); }
+  .chip:hover { color: var(--fg); background: var(--surface-2); }
+  .notice { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: rgba(255, 200, 120, .12); border: 1px solid rgba(255, 200, 120, .3); font-size: 13px; }
+  .notice code { background: rgba(0, 0, 0, .3); padding: 1px 6px; border-radius: 5px; }
+
+  /* Tâches */
+  .addrow { display: flex; gap: 8px; }
+  .addrow input { flex: 1; min-width: 0; background: rgba(0, 0, 0, .25); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .tasks ul { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .task { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; background: rgba(0, 0, 0, .18); border: 1px solid transparent; }
+  .task.active { border-color: var(--accent); }
+  .task input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px; flex: none; }
+  .task .name { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 2px 0; overflow-wrap: anywhere; }
+  .task.done .name { text-decoration: line-through; color: var(--muted); }
+  .task .count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; flex: none; }
+  .task .del { background: none; border: 0; color: var(--muted); padding: 4px 8px; border-radius: 6px; font-size: 18px; line-height: 1; }
+  .task .del:hover { color: var(--fg); background: var(--surface-2); }
+  .empty { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+
+  /* Réglages */
+  dialog { background: #1b2230; color: var(--fg); border: 1px solid var(--line); border-radius: 18px; padding: 0; width: min(480px, calc(100vw - 24px)); max-height: calc(100vh - 24px); }
+  dialog::backdrop { background: rgba(0, 0, 0, .55); }
+  .dhead { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: #1b2230; }
+  .dhead h2 { margin: 0; font: 600 18px/1 var(--font-display); text-transform: none; letter-spacing: 0; color: var(--fg); }
+  .dbody { padding: 6px 22px 22px; display: flex; flex-direction: column; }
+  .group { padding: 16px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+  .group:last-child { border-bottom: 0; }
+  .group h3 { margin: 0; font: 600 12px/1 var(--font-body); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: var(--muted); }
+  .field input, .field select { background: rgba(0, 0, 0, .3); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; color: var(--fg); width: 100%; }
+  .line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .line input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+  .line input[type="range"] { accent-color: var(--accent); width: 55%; }
+
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: minmax(0, 1fr); }
+    .card { padding: 18px; }
+  }
+  @media (max-width: 420px) {
+    .primary { min-width: 0; flex: 1; padding-inline: 16px; }
+    .urlrow { flex-direction: column; }
+    .tab { padding: 8px 10px; font-size: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body data-mode="focus">
+<div class="wrap">
+
+  <header class="top">
+    <h1>Pomodoro Ambiance</h1>
+    <button class="ghost" id="openSettings" type="button" aria-label="Ouvrir les réglages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Réglages
+    </button>
+  </header>
+
+  <main class="grid">
+
+    <section class="card timer" aria-label="Minuteur">
+      <div class="tabs" role="tablist" aria-label="Mode">
+        <button class="tab" role="tab" data-mode="focus" aria-selected="true">Concentration</button>
+        <button class="tab" role="tab" data-mode="short" aria-selected="false">Pause courte</button>
+        <button class="tab" role="tab" data-mode="long" aria-selected="false">Pause longue</button>
+      </div>
+
+      <div class="dial">
+        <svg viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="track" cx="100" cy="100" r="92"/>
+          <circle class="bar" id="bar" cx="100" cy="100" r="92"/>
+        </svg>
+        <div class="readout">
+          <div id="time" role="timer" aria-live="off">25:00</div>
+          <div id="label">Concentration</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="round" id="reset" type="button" aria-label="Remettre à zéro" title="Remettre à zéro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        </button>
+        <button class="primary" id="toggle" type="button">Démarrer</button>
+        <button class="round" id="skip" type="button" aria-label="Passer à l'étape suivante" title="Passer à l'étape suivante">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5l9 7-9 7V5z"/><rect x="17" y="5" width="3" height="14" rx="1"/></svg>
+        </button>
+      </div>
+
+      <p id="session">Session n°1</p>
+      <p class="hint">Espace : démarrer / pause · 1, 2, 3 : changer de mode</p>
+    </section>
+
+    <div class="side">
+
+      <section class="card" aria-label="Ambiance sonore">
+        <h2>Ambiance sonore</h2>
+        <form class="urlrow" id="ytForm">
+          <input id="ytUrl" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="Collez un lien YouTube" aria-label="Lien YouTube">
+          <button class="btn" type="submit">Charger</button>
+        </form>
+        <p class="msg" id="ytMsg"></p>
+        <div class="video"><iframe id="yt" title="Lecteur YouTube" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+        <div class="mrow">
+          <button class="ghost" id="musicBtn" type="button">Lire</button>
+          <label for="musicVol">Volume</label>
+          <input id="musicVol" type="range" min="0" max="100" step="1">
+        </div>
+        <div class="chips" id="recents" aria-label="Vidéos récentes"></div>
+        <div class="notice" id="fileNotice" hidden>
+          Cette page est ouverte depuis un fichier local, ce qui peut faire refuser la vidéo par YouTube (erreur 153). Lancez plutôt <code>python3 -m http.server</code> dans le dossier puis ouvrez <code>http://localhost:8000/pomodoro.html</code>, ou hébergez la page (Netlify, GitHub Pages).
+        </div>
+      </section>
+
+      <section class="card tasks" aria-label="Tâches">
+        <h2>Tâches</h2>
+        <form class="addrow" id="taskForm">
+          <input id="taskInput" type="text" autocomplete="off" maxlength="120" placeholder="Sur quoi travaillez-vous ?" aria-label="Nouvelle tâche">
+          <button class="btn" type="submit">Ajouter</button>
+        </form>
+        <ul id="taskList"></ul>
+        <p class="empty" id="taskEmpty">Aucune tâche. Ajoutez-en une pour compter vos pomodoros par tâche.</p>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <div class="dhead">
+    <h2 id="dlgTitle">Réglages</h2>
+    <button class="ghost" id="closeSettings" type="button">Fermer</button>
+  </div>
+  <div class="dbody">
+    <div class="group">
+      <h3>Durées (minutes)</h3>
+      <div class="three">
+        <label class="field">Concentration<input type="number" data-key="focus" min="1" max="180" step="1"></label>
+        <label class="field">Pause courte<input type="number" data-key="short" min="1" max="60" step="1"></label>
+        <label class="field">Pause longue<input type="number" data-key="long" min="1" max="120" step="1"></label>
+      </div>
+      <label class="field">Pause longue après N sessions<input type="number" data-key="longEvery" min="1" max="12" step="1"></label>
+    </div>
+
+    <div class="group">
+      <h3>Enchaînement</h3>
+      <label class="line">Lancer les pauses automatiquement<input type="checkbox" data-key="autoBreak"></label>
+      <label class="line">Lancer les sessions automatiquement<input type="checkbox" data-key="autoFocus"></label>
+    </div>
+
+    <div class="group">
+      <h3>Alarme de fin</h3>
+      <label class="field">Son
+        <select data-key="alarm">
+          <option value="bell">Cloche</option>
+          <option value="chime">Carillon</option>
+          <option value="beep">Bips</option>
+          <option value="gong">Gong</option>
+        </select>
+      </label>
+      <label class="line">Volume<input type="range" data-key="alarmVol" min="0" max="100" step="1"></label>
+      <label class="field">Répétitions<input type="number" data-key="alarmRepeat" min="1" max="10" step="1"></label>
+      <label class="line">Notification du navigateur<input type="checkbox" data-key="notify"></label>
+      <div><button class="ghost" id="testAlarm" type="button">Tester l'alarme</button></div>
+    </div>
+
+    <div class="group">
+      <h3>Ambiance sonore</h3>
+      <label class="field">Lecture automatique
+        <select data-key="musicMode">
+          <option value="focus">Pendant les sessions de concentration seulement</option>
+          <option value="always">Pendant toutes les sessions, pauses comprises</option>
+          <option value="manual">Manuelle : je gère moi-même</option>
+        </select>
+      </label>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  var EXAMPLE_URL = 'https://www.youtube.com/watch?v=A7cI4_pzwmY';
+  var DEFAULTS = {
+    focus: 25, short: 5, long: 15, longEvery: 4,
+    autoBreak: false, autoFocus: false,
+    alarm: 'bell', alarmVol: 70, alarmRepeat: 2, notify: false,
+    musicMode: 'focus', musicVol: 60
+  };
+  var LABELS = { focus: 'Concentration', short: 'Pause courte', long: 'Pause longue' };
+
+  function $(s) { return document.querySelector(s); }
+  function load(key, fallback) {
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+  }
+  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+
+  var settings = Object.assign({}, DEFAULTS, load('pf.settings', {}));
+  var state = { mode: 'focus', running: false, endAt: 0, remaining: settings.focus * 60, done: load('pf.done', 0) };
+  var timerId = null;
+
+  /* ---------- Affichage ---------- */
+  var C = 2 * Math.PI * 92;
+  var bar = $('#bar');
+  bar.style.strokeDasharray = C;
+
+  function fmt(sec) {
+    var s = Math.max(0, Math.ceil(sec));
+    var m = Math.floor(s / 60), r = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+  }
+
+  function render() {
+    var total = settings[state.mode] * 60;
+    var progress = total > 0 ? 1 - state.remaining / total : 0;
+    progress = Math.min(1, Math.max(0, progress));
+    bar.style.strokeDashoffset = C * (1 - progress);
+    $('#time').textContent = fmt(state.remaining);
+    $('#label').textContent = LABELS[state.mode];
+    $('#toggle').textContent = state.running ? 'Pause' : 'Démarrer';
+    document.body.dataset.mode = state.mode;
+    document.querySelectorAll('.tab').forEach(function (t) {
+      t.setAttribute('aria-selected', String(t.dataset.mode === state.mode));
+    });
+    var n = state.done;
+    $('#session').textContent = 'Session n°' + (n + 1) + ' · ' + n + (n > 1 ? ' terminées' : ' terminée');
+    document.title = state.running ? fmt(state.remaining) + ' · ' + LABELS[state.mode] : 'Pomodoro Ambiance';
+  }
+
+  /* ---------- Minuteur ---------- */
+  function tick() {
+    state.remaining = Math.max(0, (state.endAt - Date.now()) / 1000);
+    render();
+    if (state.remaining <= 0) complete();
+  }
+
+  function start() {
+    if (state.running) return;
+    unlockAudio();
+    if (state.remaining <= 0) state.remaining = settings[state.mode] * 60;
+    state.endAt = Date.now() + state.remaining * 1000;
+    state.running = true;
+    clearInterval(timerId);
+    timerId = setInterval(tick, 250);
+    syncMusic();
+    render();
+  }
+
+  function pause() {
+    if (!state.running) return;
+    state.remaining = Math.max(0, (state.endAt - Date.now()) / 1000);
+    state.running = false;
+    clearInterval(timerId);
+    syncMusic();
+    render();
+  }
+
+  function switchMode(mode) {
+    state.mode = mode;
+    state.running = false;
+    clearInterval(timerId);
+    state.remaining = settings[mode] * 60;
+    syncMusic();
+    render();
+  }
+
+  function complete() {
+    var wasFocus = state.mode === 'focus';
+    state.running = false;
+    clearInterval(timerId);
+
+    var dur = playAlarm(settings.alarm, settings.alarmVol, settings.alarmRepeat);
+    duckMusic(dur);
+    notify(wasFocus);
+
+    var next;
+    if (wasFocus) {
+      state.done += 1;
+      save('pf.done', state.done);
+      bumpActiveTask();
+      next = (state.done % settings.longEvery === 0) ? 'long' : 'short';
+    } else {
+      next = 'focus';
+    }
+    switchMode(next);
+    if ((wasFocus && settings.autoBreak) || (!wasFocus && settings.autoFocus)) start();
+  }
+
+  $('#toggle').addEventListener('click', function () { state.running ? pause() : start(); });
+  $('#reset').addEventListener('click', function () { switchMode(state.mode); });
+  $('#skip').addEventListener('click', function () {
+    var wasFocus = state.mode === 'focus';
+    if (wasFocus) {
+      switchMode((state.done + 1) % settings.longEvery === 0 ? 'long' : 'short');
+    } else {
+      switchMode('focus');
+    }
+  });
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { switchMode(t.dataset.mode); });
+  });
+  document.addEventListener('visibilitychange', function () { if (state.running) tick(); });
+
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.ctrlKey || e.metaKey || e.altKey) return;
+    if ($('#dlg').open) return;
+    if (e.code === 'Space' && tag !== 'button') { e.preventDefault(); state.running ? pause() : start(); }
+    else if (e.key === '1') switchMode('focus');
+    else if (e.key === '2') switchMode('short');
+    else if (e.key === '3') switchMode('long');
+  });
+
+  /* ---------- Alarmes (synthétisées, aucun fichier audio) ---------- */
+  var ac = null;
+  function unlockAudio() {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      ac = ac || new AC();
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) {}
+  }
+
+  function tone(master, freq, t0, dur, type, gain) {
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(master);
+    o.start(t0); o.stop(t0 + dur + 0.05);
+  }
+
+  var SOUNDS = {
+    bell:  { len: 2.0, play: function (m, t) {
+      tone(m, 880, t, 1.8, 'sine', 0.5); tone(m, 1760, t, 1.2, 'sine', 0.22); tone(m, 2640, t, 0.7, 'sine', 0.1); } },
+    chime: { len: 1.9, play: function (m, t) {
+      [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { tone(m, f, t + i * 0.26, 0.9, 'triangle', 0.4); }); } },
+    beep:  { len: 1.2, play: function (m, t) {
+      for (var i = 0; i < 3; i++) tone(m, 1000, t + i * 0.28, 0.16, 'square', 0.16); } },
+    gong:  { len: 3.6, play: function (m, t) {
+      tone(m, 196, t, 3.4, 'sine', 0.6); tone(m, 392, t, 2.4, 'sine', 0.25); tone(m, 587, t, 1.6, 'sine', 0.12); } }
+  };
+
+  function playAlarm(kind, vol, repeat) {
+    unlockAudio();
+    if (!ac) return 0;
+    var s = SOUNDS[kind] || SOUNDS.bell;
+    var master = ac.createGain();
+    master.gain.value = Math.max(0, Math.min(1, vol / 100));
+    master.connect(ac.destination);
+    var t = ac.currentTime + 0.05;
+    for (var r = 0; r < repeat; r++) s.play(master, t + r * s.len);
+    return s.len * repeat;
+  }
+
+  function notify(wasFocus) {
+    if (!settings.notify || !('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+      new Notification(wasFocus ? 'Session terminée' : 'Pause terminée', {
+        body: wasFocus ? 'Bien joué. Place à la pause.' : 'C\'est reparti pour une session.'
+      });
+    } catch (e) {}
+  }
+
+  /* ---------- YouTube (mode sans cookie) ---------- */
+  var frame = $('#yt');
+  var ytPlaying = false;
+
+  function parseYT(input) {
+    input = (input || '').trim();
+    if (!input) return null;
+    if (/^[\w-]{11}$/.test(input)) return { id: input, list: null };
+    var u;
+    try { u = new URL(input.indexOf('://') > -1 ? input : 'https://' + input); } catch (e) { return null; }
+    var host = u.hostname.replace(/^www\./, '').replace(/^m\./, '');
+    var id = null, list = u.searchParams.get('list');
+    if (host === 'youtu.be') id = u.pathname.slice(1).split('/')[0];
+    else if (u.searchParams.get('v')) id = u.searchParams.get('v');
+    else {
+      var m = u.pathname.match(/\/(embed|shorts|live|v)\/([\w-]{11})/);
+      if (m) id = m[2];
+    }
+    if (id && !/^[\w-]{11}$/.test(id)) id = null;
+    if (list && !/^[\w-]+$/.test(list)) list = null;
+    if (!id && !list) return null;
+    return { id: id, list: list };
+  }
+
+  function embedURL(p) {
+    var q = new URLSearchParams({ enablejsapi: '1', rel: '0', playsinline: '1', modestbranding: '1' });
+    var path;
+    if (p.id && p.list) { path = p.id; q.set('list', p.list); }
+    else if (p.id) { path = p.id; q.set('loop', '1'); q.set('playlist', p.id); }
+    else { path = 'videoseries'; q.set('list', p.list); }
+    if (location.protocol === 'http:' || location.protocol === 'https:') q.set('origin', location.origin);
+    return 'https://www.youtube-nocookie.com/embed/' + path + '?' + q.toString();
+  }
+
+  function showMsg(text, isErr) {
+    var el = $('#ytMsg');
+    el.textContent = text;
+    el.className = 'msg' + (isErr ? ' err' : '');
+  }
+
+  function loadVideo(input, remember) {
+    var p = parseYT(input);
+    if (!p) { showMsg('Lien non reconnu. Collez une adresse YouTube, par exemple ' + EXAMPLE_URL, true); return false; }
+    ytPlaying = false; updateMusicBtn();
+    frame.src = embedURL(p);
+    var shown = 'https://www.youtube-nocookie.com/embed/' + (p.id || 'videoseries?list=' + p.list);
+    showMsg('Chargée en mode sans cookie : ' + shown, false);
+    $('#ytUrl').value = input.trim();
+    if (remember !== false) { saveRecent(input.trim()); }
+    save('pf.video', input.trim());
+    return true;
+  }
+
+  function saveRecent(url) {
+    var list = load('pf.recents', []).filter(function (u) { return u !== url; });
+    list.unshift(url);
+    save('pf.recents', list.slice(0, 5));
+    renderRecents();
+  }
+
+  function renderRecents() {
+    var box = $('#recents');
+    box.textContent = '';
+    load('pf.recents', []).forEach(function (url) {
+      var p = parseYT(url);
+      if (!p) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip';
+      b.textContent = p.id ? 'Vidéo ' + p.id.slice(0, 6) + '…' : 'Playlist ' + p.list.slice(0, 6) + '…';
+      b.title = url;
+      b.addEventListener('click', function () { loadVideo(url); });
+      box.appendChild(b);
+    });
+  }
+
+  function yt(func, args) {
+    try {
+      if (!frame.contentWindow || !frame.src) return;
+      frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: args || [] }), '*');
+    } catch (e) {}
+  }
+
+  frame.addEventListener('load', function () {
+    try { frame.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*'); } catch (e) {}
+    yt('setVolume', [settings.musicVol]);
+    if (state.running) syncMusic();
+  });
+
+  window.addEventListener('message', function (e) {
+    if (e.source !== frame.contentWindow) return;
+    try {
+      var d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+      if (!d) return;
+      if (d.event === 'onStateChange') ytPlaying = d.info === 1;
+      else if (d.event === 'infoDelivery' && d.info && typeof d.info.playerState === 'number') ytPlaying = d.info.playerState === 1;
+      else return;
+      updateMusicBtn();
+    } catch (err) {}
+  });
+
+  function updateMusicBtn() { $('#musicBtn').textContent = ytPlaying ? 'Pause' : 'Lire'; }
+  $('#musicBtn').addEventListener('click', function () { yt(ytPlaying ? 'pauseVideo' : 'playVideo'); });
+
+  function wantMusic() {
+    if (settings.musicMode === 'manual') return null;
+    if (!state.running) return false;
+    if (settings.musicMode === 'focus') return state.mode === 'focus';
+    return true;
+  }
+  function syncMusic() {
+    var w = wantMusic();
+    if (w === null) return;
+    yt(w ? 'playVideo' : 'pauseVideo');
+  }
+  function duckMusic(seconds) {
+    yt('setVolume', [Math.min(settings.musicVol, 15)]);
+    setTimeout(function () { yt('setVolume', [settings.musicVol]); }, Math.max(1500, seconds * 1000));
+  }
+
+  $('#ytForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (loadVideo($('#ytUrl').value)) setTimeout(function () { syncMusic(); }, 1200);
+  });
+
+  var vol = $('#musicVol');
+  vol.value = settings.musicVol;
+  vol.addEventListener('input', function () {
+    settings.musicVol = Number(vol.value);
+    save('pf.settings', settings);
+    yt('setVolume', [settings.musicVol]);
+  });
+
+  /* ---------- Tâches ---------- */
+  var tasks = load('pf.tasks', []);
+  var activeId = load('pf.active', null);
+
+  function saveTasks() { save('pf.tasks', tasks); save('pf.active', activeId); }
+
+  function bumpActiveTask() {
+    var t = tasks.filter(function (x) { return x.id === activeId && !x.done; })[0];
+    if (t) { t.count += 1; saveTasks(); renderTasks(); }
+  }
+
+  function renderTasks() {
+    var ul = $('#taskList');
+    ul.textContent = '';
+    $('#taskEmpty').hidden = tasks.length > 0;
+    tasks.forEach(function (t) {
+      var li = document.createElement('li');
+      li.className = 'task' + (t.id === activeId && !t.done ? ' active' : '') + (t.done ? ' done' : '');
+
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = t.done; cb.setAttribute('aria-label', 'Terminée : ' + t.text);
+      cb.addEventListener('change', function () { t.done = cb.checked; saveTasks(); renderTasks(); });
+
+      var name = document.createElement('button');
+      name.type = 'button'; name.className = 'name'; name.textContent = t.text;
+      name.title = 'Définir comme tâche en cours';
+      name.addEventListener('click', function () { if (!t.done) { activeId = t.id; saveTasks(); renderTasks(); } });
+
+      var count = document.createElement('span');
+      count.className = 'count'; count.textContent = t.count + ' ×';
+      count.title = 'Pomodoros terminés';
+
+      var del = document.createElement('button');
+      del.type = 'button'; del.className = 'del'; del.textContent = '×'; del.setAttribute('aria-label', 'Supprimer : ' + t.text);
+      del.addEventListener('click', function () {
+        tasks = tasks.filter(function (x) { return x.id !== t.id; });
+        if (activeId === t.id) activeId = null;
+        saveTasks(); renderTasks();
+      });
+
+      li.appendChild(cb); li.appendChild(name); li.appendChild(count); li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+
+  $('#taskForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var input = $('#taskInput');
+    var text = input.value.trim();
+    if (!text) return;
+    var t = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text: text, done: false, count: 0 };
+    tasks.push(t);
+    if (!activeId) activeId = t.id;
+    input.value = '';
+    saveTasks(); renderTasks();
+  });
+
+  /* ---------- Réglages ---------- */
+  var dlg = $('#dlg');
+
+  function fillSettings() {
+    dlg.querySelectorAll('[data-key]').forEach(function (el) {
+      var k = el.dataset.key;
+      if (el.type === 'checkbox') el.checked = !!settings[k]; else el.value = settings[k];
+    });
+  }
+
+  dlg.addEventListener('input', function (e) {
+    var el = e.target.closest('[data-key]');
+    if (!el) return;
+    var k = el.dataset.key, v;
+    if (el.type === 'checkbox') v = el.checked;
+    else if (el.type === 'number' || el.type === 'range') {
+      v = Number(el.value);
+      if (!isFinite(v) || el.value === '' || v < Number(el.min)) return;
+      v = Math.min(v, Number(el.max));
+    } else v = el.value;
+    settings[k] = v;
+    save('pf.settings', settings);
+
+    if ((k === 'focus' || k === 'short' || k === 'long') && !state.running && k === state.mode) {
+      state.remaining = settings[k] * 60;
+    }
+    if (k === 'notify' && v && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(function (p) {
+        if (p !== 'granted') { settings.notify = false; save('pf.settings', settings); fillSettings(); }
+      });
+    }
+    if (k === 'musicMode') syncMusic();
+    render();
+  });
+
+  $('#openSettings').addEventListener('click', function () { fillSettings(); dlg.showModal(); });
+  $('#closeSettings').addEventListener('click', function () { dlg.close(); });
+  dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+  $('#testAlarm').addEventListener('click', function () { playAlarm(settings.alarm, settings.alarmVol, 1); });
+
+  /* ---------- Démarrage ---------- */
+  if (location.protocol === 'file:') $('#fileNotice').hidden = false;
+  renderRecents();
+  renderTasks();
+  render();
+  loadVideo(load('pf.video', EXAMPLE_URL), false);
+})();
+</script>
+</body>
+</html>
